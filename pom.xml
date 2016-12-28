@@ -48,31 +48,6 @@
 	</build>
 	<dependencies>
         <dependency> 
-            <groupId>org.apache.wicket</groupId>  
-            <artifactId>wicket-core</artifactId>  
-            <version>${wicketVersion}</version> 
-        </dependency>  
-        <dependency> 
-            <groupId>org.apache.wicket</groupId>  
-            <artifactId>wicket-extensions</artifactId>  
-            <version>${wicketVersion}</version> 
-        </dependency>  
-        <dependency> 
-            <groupId>org.apache.wicket</groupId>  
-            <artifactId>wicket-request</artifactId>  
-            <version>${wicketVersion}</version> 
-        </dependency>  
-        <dependency> 
-            <groupId>org.apache.wicket</groupId>  
-            <artifactId>wicket-util</artifactId>  
-            <version>${wicketVersion}</version> 
-        </dependency>  
-        <dependency> 
-            <groupId>org.apache.wicket</groupId>  
-            <artifactId>wicket-devutils</artifactId>  
-            <version>${wicketVersion}</version> 
-        </dependency>  
-        <dependency> 
             <groupId>org.slf4j</groupId>  
             <artifactId>slf4j-api</artifactId> 
             <version>1.7.5</version>
@@ -138,7 +113,6 @@
 	</repositories>
 	<properties>
 		<antlrVersion>4.5.1-1</antlrVersion>
-		<wicketVersion>7.3.0</wicketVersion>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 	</properties>
