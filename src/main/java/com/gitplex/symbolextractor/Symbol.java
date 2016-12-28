@@ -5,7 +5,10 @@ import java.io.Serializable;
 import javax.annotation.Nullable;
 
 /**
- * Represents a symbol extracted from source file
+ * Represents a symbol extracted from source file. Implementation should preserve enough 
+ * information in the symbol (such as method parameters, return type, method modifier) 
+ * for UI to render it appropriately. Various Java symbols in Java extractor package 
+ * can be used as an example
  * 
  * @author robin
  *
