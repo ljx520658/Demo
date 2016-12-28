@@ -1,4 +1,4 @@
-package com.gitplex.symbolextractor.helper;
+package com.gitplex.symbolextractor.util;
 
 import org.antlr.v4.runtime.Token;
 

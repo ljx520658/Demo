@@ -1,4 +1,4 @@
-package com.gitplex.symbolextractor.java;
+package com.gitplex.symbolextractor.java.symbols;
 
 public enum Modifier {
 	PUBLIC, PRIVATE, PROTECTED, STATIC, ABSTRACT, STRICTFP, FINAL, 

@@ -4,6 +4,10 @@ import java.io.Serializable;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.wicket.Component;
+import org.apache.wicket.request.resource.ResourceReference;
+
 /**
  * Represents a symbol extracted from source file. Implementation should preserve enough 
  * information in the symbol (such as method parameters, return type, method modifier) 
@@ -103,4 +107,27 @@ public abstract class Symbol implements Serializable {
 	 */
 	public abstract boolean isPrimary();
 
+	/**
+	 * Render the symbol in web UI
+	 * 
+	 * @param componentId
+	 * 			wicket component id corresponding to this symbol
+	 * @param highlight
+	 * 			range of the name to be highlighted if not <tt>null</tt>. For instance, 
+	 * 			when user searches for a symbol, this range will be used to highlight
+	 * 			the matched search in the symbol name
+	 * 			
+	 * @return
+	 * 			a wicket component to be displayed in web UI for the symbol
+	 */
+	public abstract Component render(String componentId, @Nullable Pair<Integer, Integer> highlightRange);
+	
+	/**
+	 * Get icon of the symbol to be displayed in web UI
+	 * 
+	 * @return
+	 * 			icon of the symbol
+	 */
+	public abstract ResourceReference getIcon();
+	
 }

@@ -7,7 +7,12 @@ import org.junit.Test;
 
 import com.gitplex.symbolextractor.AbstractExtractorTest;
 import com.gitplex.symbolextractor.Symbol;
-import com.gitplex.symbolextractor.java.TypeDef.Kind;
+import com.gitplex.symbolextractor.java.symbols.CompilationUnit;
+import com.gitplex.symbolextractor.java.symbols.FieldDef;
+import com.gitplex.symbolextractor.java.symbols.MethodDef;
+import com.gitplex.symbolextractor.java.symbols.Modifier;
+import com.gitplex.symbolextractor.java.symbols.TypeDef;
+import com.gitplex.symbolextractor.java.symbols.TypeDef.Kind;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 

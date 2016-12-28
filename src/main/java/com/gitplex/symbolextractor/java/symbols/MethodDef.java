@@ -1,11 +1,18 @@
-package com.gitplex.symbolextractor.java;
+package com.gitplex.symbolextractor.java.symbols;
 
 import java.util.List;
 
 import javax.annotation.Nullable;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.wicket.Component;
+import org.apache.wicket.request.resource.PackageResourceReference;
+import org.apache.wicket.request.resource.ResourceReference;
+
 import com.gitplex.symbolextractor.Position;
 import com.gitplex.symbolextractor.Symbol;
+import com.gitplex.symbolextractor.java.symbols.ui.MethodDefPanel;
+import com.gitplex.symbolextractor.java.symbols.ui.icon.IconLocator;
 
 public class MethodDef extends Symbol {
 
@@ -64,6 +71,25 @@ public class MethodDef extends Symbol {
 	@Override
 	public boolean isPrimary() {
 		return false;
+	}
+
+	@Override
+	public Component render(String componentId, Pair<Integer, Integer> highlight) {
+		return new MethodDefPanel(componentId, this, highlight);
+	}
+
+	@Override
+	public ResourceReference getIcon() {
+		String icon;
+		if (modifiers.contains(Modifier.PRIVATE))
+			icon = "methpri_obj.png";
+		else if (modifiers.contains(Modifier.PROTECTED))
+			icon = "methpro_obj.png";
+		else if (modifiers.contains(Modifier.PUBLIC))
+			icon = "methpub_obj.png";
+		else
+			icon = "methdef_obj.png";
+		return new PackageResourceReference(IconLocator.class, icon);
 	}
 
 }

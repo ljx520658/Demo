@@ -46,9 +46,14 @@ import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.gitplex.symbolextractor.SymbolExtractor;
-import com.gitplex.symbolextractor.helper.Token;
-import com.gitplex.symbolextractor.helper.TokenFilter;
-import com.gitplex.symbolextractor.helper.TokenStream;
+import com.gitplex.symbolextractor.java.symbols.CompilationUnit;
+import com.gitplex.symbolextractor.java.symbols.FieldDef;
+import com.gitplex.symbolextractor.java.symbols.MethodDef;
+import com.gitplex.symbolextractor.java.symbols.Modifier;
+import com.gitplex.symbolextractor.java.symbols.TypeDef;
+import com.gitplex.symbolextractor.util.Token;
+import com.gitplex.symbolextractor.util.TokenFilter;
+import com.gitplex.symbolextractor.util.TokenStream;
 import com.gitplex.symbolextractor.Symbol;
 import com.gitplex.symbolextractor.Position;
 import com.google.common.collect.ImmutableMap;

@@ -7,9 +7,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import com.gitplex.symbolextractor.ExtractException;
-import com.gitplex.symbolextractor.helper.TokenFilter;
-import com.gitplex.symbolextractor.helper.TokenStream;
 import com.gitplex.symbolextractor.java.JavaLexer;
+import com.gitplex.symbolextractor.util.TokenFilter;
+import com.gitplex.symbolextractor.util.TokenStream;
 
 public class TokenStreamTest {
 

@@ -1,4 +1,4 @@
-package com.gitplex.symbolextractor.helper;
+package com.gitplex.symbolextractor.util;
 
 import com.gitplex.symbolextractor.ExtractException;
 
