@@ -14,7 +14,7 @@ public class Token implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	public static final Token EOF = new Token(org.antlr.v4.runtime.Token.EOF, "", Position.NONE, Position.NONE);
+	static final Token EOF = new Token(org.antlr.v4.runtime.Token.EOF, "", Position.NONE, Position.NONE);
 	
 	private final int type;
 	
@@ -54,6 +54,10 @@ public class Token implements Serializable {
 		this.to = to;
 	}
 	
+	public Token(Enum<?> type, String text, Position from, Position to) {
+		this(type.ordinal(), text, from, to);
+	}
+	
 	/**
 	 * Check if this token is of specified type
 	 * 
@@ -64,6 +68,10 @@ public class Token implements Serializable {
 	 */
 	public boolean is(int type) {
 		return this.type == type; 
+	}
+	
+	public boolean is(Enum<?> type) {
+		return is(type.ordinal());
 	}
 	
 	/**
@@ -80,6 +88,10 @@ public class Token implements Serializable {
 				return true;
 		}
 		return false;
+	}
+	
+	public boolean is(Enum<?>...types) {
+		return is(Utils.getOrdinals(types));
 	}
 	
 	/**
@@ -141,6 +153,12 @@ public class Token implements Serializable {
 	 * 			UnexpectedTokenException if token is not of expected types
 	 */
 	public Token checkType(int... expectedTypes) {
+		if (!is(expectedTypes))
+			throw new UnexpectedTokenException(this);
+		return this;
+	}
+	
+	public Token checkType(Enum<?>... expectedTypes) {
 		if (!is(expectedTypes))
 			throw new UnexpectedTokenException(this);
 		return this;

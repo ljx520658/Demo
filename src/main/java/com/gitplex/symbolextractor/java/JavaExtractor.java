@@ -74,9 +74,9 @@ public class JavaExtractor implements SymbolExtractor {
 	 * @after-token: EOF
 	 * 
 	 */
-	public List<Symbol> extract(String text) {
+	public List<Symbol> extract(String source) {
 		TokenStream stream = new TokenStream(
-				new JavaLexer(new ANTLRInputStream(text)), TokenFilter.DEFAULT_CHANNEL);
+				new JavaLexer(new ANTLRInputStream(source)), TokenFilter.DEFAULT_CHANNEL);
 
 		List<Symbol> symbols = new ArrayList<>();
 
@@ -153,7 +153,7 @@ public class JavaExtractor implements SymbolExtractor {
 				} else {
 					skipModifiers(stream); // skip annotations applied to method return type
 					token = stream.current();
-					if (token.getText().equals(parent.getName()) && stream.lookAhead(1).is(LPAREN)) { 
+					if (token.getText().equals(parent.getIndexName()) && stream.lookAhead(1).is(LPAREN)) { 
 						// this is a constructor
 						defineMethod(stream, symbols, parent, modifiers, null);
 					} else {

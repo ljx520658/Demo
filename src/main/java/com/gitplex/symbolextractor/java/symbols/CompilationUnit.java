@@ -2,15 +2,12 @@ package com.gitplex.symbolextractor.java.symbols;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.wicket.Component;
-import org.apache.wicket.request.resource.PackageResourceReference;
-import org.apache.wicket.request.resource.ResourceReference;
 
 import com.gitplex.symbolextractor.Position;
+import com.gitplex.symbolextractor.Range;
 import com.gitplex.symbolextractor.Symbol;
-import com.gitplex.symbolextractor.java.symbols.ui.icon.IconLocator;
-import com.gitplex.symbolextractor.util.HighlightableLabel;
+import com.gitplex.symbolextractor.java.symbols.ui.CompilationUnitPanel;
 
 public class CompilationUnit extends Symbol {
 	
@@ -44,13 +41,8 @@ public class CompilationUnit extends Symbol {
 	}
 
 	@Override
-	public Component render(String componentId, Pair<Integer, Integer> highlight) {
-		return new HighlightableLabel(componentId, packageName, highlight);
-	}
-
-	@Override
-	public ResourceReference getIcon() {
-		return new PackageResourceReference(IconLocator.class, "package_obj.png");
+	public Component render(String componentId, Range highlight) {
+		return new CompilationUnitPanel(componentId, this);
 	}
 
 }

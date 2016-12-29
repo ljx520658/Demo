@@ -1,0 +1,4 @@
+var modA
+var modB
+exports.app
+exports.foo

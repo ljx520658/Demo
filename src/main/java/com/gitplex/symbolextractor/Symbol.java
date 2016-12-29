@@ -4,9 +4,7 @@ import java.io.Serializable;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.wicket.Component;
-import org.apache.wicket.request.resource.ResourceReference;
 
 /**
  * Represents a symbol extracted from source file. Implementation should preserve enough 
@@ -23,7 +21,7 @@ public abstract class Symbol implements Serializable {
 
 	private final Symbol parent;
 	
-	private final String name;
+	private final String indexName;
 	
 	private final Position from;
 	
@@ -34,7 +32,7 @@ public abstract class Symbol implements Serializable {
 	 * 
 	 * @param parent
 	 * 			parent symbol, use <tt>null</tt> if there is no parent 
-	 * @param name
+	 * @param indexName
 	 * 			name of the symbol to be indexed for search and cross referencing. 
 	 * 			Use <tt>null</tt> if the symbol is only for outline purpose, and 
 	 * 			does not need to be indexed for search and cross referenced. For 
@@ -43,9 +41,9 @@ public abstract class Symbol implements Serializable {
 	 * @param pos
 	 * 			position of the symbol in source file
 	 */
-	public Symbol(@Nullable Symbol parent, @Nullable String name, Position from, Position to) {
+	public Symbol(@Nullable Symbol parent, @Nullable String indexName, Position from, Position to) {
 		this.parent = parent;
-		this.name = name;
+		this.indexName = indexName;
 		this.from = from;
 		this.to = to;
 	}
@@ -62,8 +60,8 @@ public abstract class Symbol implements Serializable {
 	 * 			does not need to be indexed
 	 */
 	@Nullable
-	public String getName() {
-		return name;
+	public String getIndexName() {
+		return indexName;
 	}
 
 	public Position getFrom() {
@@ -78,11 +76,11 @@ public abstract class Symbol implements Serializable {
 		int relevance = 1;
 		Symbol parent = this.parent;
 		while (parent != null) {
-			if (parent.getName() != null)
+			if (parent.getIndexName() != null)
 				relevance++;
 			parent = parent.parent;
 		}
-		return relevance*name.length();
+		return relevance*(indexName!=null?indexName.length():1);
 	}
 	
 	/**
@@ -120,14 +118,6 @@ public abstract class Symbol implements Serializable {
 	 * @return
 	 * 			a wicket component to be displayed in web UI for the symbol
 	 */
-	public abstract Component render(String componentId, @Nullable Pair<Integer, Integer> highlightRange);
-	
-	/**
-	 * Get icon of the symbol to be displayed in web UI
-	 * 
-	 * @return
-	 * 			icon of the symbol
-	 */
-	public abstract ResourceReference getIcon();
+	public abstract Component render(String componentId, @Nullable Range highlight);
 	
 }

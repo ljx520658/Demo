@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gitplex.symbolextractor.ExtractException;
+import com.gitplex.symbolextractor.Position;
 
 /**
  * Token stream holds a list of tokens parsed from source file, and provides various 
@@ -51,6 +52,21 @@ public class TokenStream {
 			token = lexer.nextToken();
 		}
 		tokens.add(Token.EOF);
+	}
+	
+	public TokenStream(List<List<com.gitplex.jsyntax.Token>> tokenizedLines, TypeMapper typeMapper) {
+		tokens = new ArrayList<>();
+		int line = 0; 
+		for (List<com.gitplex.jsyntax.Token> tokensInLine: tokenizedLines) {
+			int ch = 0;
+			for (com.gitplex.jsyntax.Token jsyntaxToken: tokensInLine) {
+				int nextCh = ch + jsyntaxToken.getText().length();
+				tokens.add(new Token(typeMapper.getType(jsyntaxToken), jsyntaxToken.getText(), 
+						new Position(line, ch), new Position(line, nextCh)));
+				ch = nextCh;
+			}
+			line++;
+		}
 	}
 	
 	/**
@@ -129,6 +145,10 @@ public class TokenStream {
 		}
 	}
 	
+	public Token nextType(Enum<?> type) {
+		return nextType(type.ordinal());
+	}
+	
 	/**
 	 * Get next token of specified types and move index forward
 	 * 
@@ -148,6 +168,10 @@ public class TokenStream {
 		}
 	}
 
+	public Token nextType(Enum<?>...types) {
+		return nextType(Utils.getOrdinals(types));
+	}
+	
 	/**
 	 * Seek to next closed type, with balancing open/close considered, that is, all open/close pair 
 	 * of the same type will be skipped. Below is an example of start position and stop position 
@@ -178,6 +202,10 @@ public class TokenStream {
 			}
 			balanced = nextType(openType, closeType);
 		}
+	}
+	
+	public Token nextClosed(Enum<?> openType, Enum<?> closeType) {
+		return nextClosed(openType.ordinal(), closeType.ordinal());
 	}
 	
 	/**

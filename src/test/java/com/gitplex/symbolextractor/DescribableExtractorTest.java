@@ -9,7 +9,7 @@ import org.junit.Assert;
 
 import com.google.common.io.Resources;
 
-public abstract class AbstractExtractorTest {
+public abstract class DescribableExtractorTest {
 
 	/**
 	 * Describe specified symbol in specified context
@@ -31,7 +31,7 @@ public abstract class AbstractExtractorTest {
 	/**
 	 * This method describes the list of symbols into a string and compares it with expected string
 	 */
-	protected void assertSymbol(String expected, List<Symbol> symbols) {
+	protected void verify(String expected, List<Symbol> symbols) {
 		StringBuilder builder = new StringBuilder();
 		for (Symbol symbol: symbols) {
 			if (symbol.getParent() == null)

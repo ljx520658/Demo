@@ -1,0 +1,10 @@
+export var person
+export var person
+export var test {
+  this.name
+}
+export function test() {
+  this.name
+}
+import person
+import Pen

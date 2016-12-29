@@ -1,0 +1,21 @@
+class Polygon {
+  constructor(height, width) {
+    this.name
+    this.height
+    this.width
+  }
+  test() {
+    class Inner2 {
+      method2() {
+        module.exports
+      }
+    }
+    class Inner3 {
+      method3() {
+        return {
+          method4()
+        }
+      }
+    }
+  }
+}

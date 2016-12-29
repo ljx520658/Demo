@@ -2,6 +2,7 @@ package com.gitplex.symbolextractor.web;
 
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -21,7 +22,6 @@ import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.markup.html.basic.MultiLineLabel;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.TextArea;
-import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.markup.html.panel.Fragment;
 import org.apache.wicket.model.IModel;
 import org.apache.wicket.model.Model;
@@ -55,12 +55,21 @@ public class HomePage extends WebPage {
 				extractorClassNames.add(extractorClass.getName());
 			}
 		}
+		Collections.sort(extractorClassNames);
 		
 		DropDownChoice<String> extractorChoice = new DropDownChoice<String>("extractor", Model.of(JavaExtractor.class.getName()), extractorClassNames);
-		add(extractorChoice);
-		
 		TextArea<String> sourceInput;
 		add(sourceInput = new TextArea<String>("source", Model.of("")));
+		extractorChoice.add(new OnChangeAjaxBehavior() {
+
+			@Override
+			protected void onUpdate(AjaxRequestTarget target) {
+				onChange(target, sourceInput.getModelObject(), extractorChoice.getModelObject());
+			}
+			
+		});
+		add(extractorChoice);
+		
 		sourceInput.add(new OnChangeAjaxBehavior() {
 				
 			@Override
@@ -71,28 +80,30 @@ public class HomePage extends WebPage {
 
 			@Override
 			protected void onUpdate(AjaxRequestTarget target) {
-				String sourceCode = sourceInput.getModelObject();
-				if (StringUtils.isNotBlank(sourceCode)) {
-					try {
-						SymbolExtractor extractor = (SymbolExtractor) Class.forName(extractorChoice.getModelObject()).newInstance();
-						symbols = extractor.extract(sourceCode);
-						error = null;
-					} catch (Exception e) {
-						error = Throwables.getStackTraceAsString(e);
-						symbols.clear();
-					}
-				} else {
-					error = null;
-					symbols.clear();
-				}
-				Component outline = newOutline();
-				HomePage.this.replace(outline);
-				target.add(outline);
+				onChange(target, sourceInput.getModelObject(), extractorChoice.getModelObject());
 			}
 			
 		});		
 		
 		add(newOutline());
+	}
+	
+	private void onChange(AjaxRequestTarget target, String sourceCode, String extractorClassName) {
+		if (StringUtils.isNotBlank(sourceCode)) {
+			try {
+				symbols = ((SymbolExtractor)Class.forName(extractorClassName).newInstance()).extract(sourceCode);
+				error = null;
+			} catch (Exception e) {
+				error = Throwables.getStackTraceAsString(e);
+				symbols.clear();
+			}
+		} else {
+			error = null;
+			symbols.clear();
+		}
+		Component outline = newOutline();
+		HomePage.this.replace(outline);
+		target.add(outline);
 	}
 	
 	private Component newOutline() {
@@ -137,9 +148,7 @@ public class HomePage extends WebPage {
 				protected Component newContentComponent(String id, IModel<Symbol> nodeModel) {
 					Fragment fragment = new Fragment(id, "outlineNodeFrag", HomePage.this);
 					Symbol symbol = nodeModel.getObject();
-					
-					fragment.add(new Image("icon", symbol.getIcon()));
-					fragment.add(symbol.render("label", null));
+					fragment.add(symbol.render("symbol", null));
 					
 					return fragment;
 				}

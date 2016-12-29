@@ -1,0 +1,19 @@
+function test() {
+  var person = {
+    name: "robin",
+  }
+  person.age = 100;
+  module.exports = person;
+  
+  function inner1() {
+    person.name = 'noname';
+  }
+  
+  function inner2() {
+    exports = {};
+  }
+  
+  return {
+    hobby: "sleep"
+  }
+}

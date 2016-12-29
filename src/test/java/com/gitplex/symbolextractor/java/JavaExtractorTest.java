@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.gitplex.symbolextractor.AbstractExtractorTest;
+import com.gitplex.symbolextractor.DescribableExtractorTest;
 import com.gitplex.symbolextractor.Symbol;
 import com.gitplex.symbolextractor.java.symbols.CompilationUnit;
 import com.gitplex.symbolextractor.java.symbols.FieldDef;
@@ -16,30 +16,30 @@ import com.gitplex.symbolextractor.java.symbols.TypeDef.Kind;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 
-public class JavaExtractorTest extends AbstractExtractorTest {
+public class JavaExtractorTest extends DescribableExtractorTest {
 
 	@Test
 	public void testComposite() {
-		assertSymbol(readFile("composite.symbols"), 
+		verify(readFile("composite.symbols"), 
 				new JavaExtractor().extract(readFile("composite.source")));
 	}
 
 	@Test
 	public void testPackageInfo() {
-		assertSymbol(readFile("package-info.symbols"), 
+		verify(readFile("package-info.symbols"), 
 				new JavaExtractor().extract(readFile("package-info.source")));
 	}
 	
 	@Test
 	public void testLCount() {
-		assertSymbol(readFile("LCount.symbols"), 
-				new JavaExtractor().extract(readFile("LCount.source")));
+		verify(readFile("lcount.symbols"), 
+				new JavaExtractor().extract(readFile("lcount.source")));
 	}
 	
 	@Test
 	public void testResource() {
-		assertSymbol(readFile("Resource.symbols"), 
-				new JavaExtractor().extract(readFile("Resource.source")));
+		verify(readFile("resource.symbols"), 
+				new JavaExtractor().extract(readFile("resource.source")));
 	}
 
 	@Override
@@ -61,14 +61,14 @@ public class JavaExtractorTest extends AbstractExtractorTest {
 				builder.append("@interface").append(" ");
 			else
 				builder.append(typeDef.getKind().toString().toLowerCase()).append(" ");
-			builder.append(typeDef.getName()).append(" {\n\n");
+			builder.append(typeDef.getIndexName()).append(" {\n\n");
 			
 			List<String> enumConstants = new ArrayList<>();
 			for (Symbol each: context) {
 				if (each.getParent() == symbol && (each instanceof FieldDef)) {
 					FieldDef fieldDef = (FieldDef) each;
 					if (fieldDef.getType() == null)  
-						enumConstants.add(fieldDef.getName());
+						enumConstants.add(fieldDef.getIndexName());
 				}
 			}
 			if (!enumConstants.isEmpty())
@@ -109,7 +109,7 @@ public class JavaExtractorTest extends AbstractExtractorTest {
 				builder.append(modifier.name().toLowerCase()).append(" ");
 			if (fieldDef.getType() != null)
 				builder.append(fieldDef.getType()).append(" ");
-			builder.append(fieldDef.getName()).append(";");
+			builder.append(fieldDef.getIndexName()).append(";");
 			return builder.toString();
 		} else if (symbol instanceof MethodDef) {
 			MethodDef methodDef = (MethodDef) symbol;
@@ -118,7 +118,7 @@ public class JavaExtractorTest extends AbstractExtractorTest {
 				builder.append(modifier.name().toLowerCase()).append(" ");
 			if (methodDef.getType() != null)
 				builder.append(methodDef.getType()).append(" ");
-			builder.append(methodDef.getName());
+			builder.append(methodDef.getIndexName());
 			if (methodDef.getParams() != null)
 				builder.append("(").append(methodDef.getParams()).append(");");
 			else

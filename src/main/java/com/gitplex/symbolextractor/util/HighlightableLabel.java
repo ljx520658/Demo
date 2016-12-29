@@ -2,30 +2,31 @@ package com.gitplex.symbolextractor.util;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.LoadableDetachableModel;
+
+import com.gitplex.symbolextractor.Range;
 
 @SuppressWarnings("serial")
 public class HighlightableLabel extends Label {
 
-	public HighlightableLabel(String id, @Nullable String label, @Nullable Pair<Integer, Integer> highlight) {
+	public HighlightableLabel(String id, @Nullable String label, @Nullable Range highlight) {
 		super(id, new LoadableDetachableModel<String>() {
 
 			@Override
 			protected String load() {
 				if (label != null) {
 					if (highlight != null) {
-						String prefix = label.substring(0, highlight.getLeft());
-						String middle = label.substring(highlight.getLeft(), highlight.getRight());
-						String suffix = label.substring(highlight.getRight());
-						return HtmlEscape.escape(prefix) 
+						String prefix = label.substring(0, highlight.getFrom());
+						String middle = label.substring(highlight.getFrom(), highlight.getTo());
+						String suffix = label.substring(highlight.getTo());
+						return Utils.escapeHtml(prefix) 
 								+ "<b>" 
-								+ HtmlEscape.escape(middle) 
+								+ Utils.escapeHtml(middle) 
 								+ "</b>" 
-								+ HtmlEscape.escape(suffix);
+								+ Utils.escapeHtml(suffix);
 					} else {
-						return HtmlEscape.escape(label);
+						return Utils.escapeHtml(label);
 					}
 				} else {
 					return "";
