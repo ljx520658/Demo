@@ -4,9 +4,9 @@ import javax.annotation.Nullable;
 
 import org.apache.wicket.Component;
 
-import com.gitplex.symbolextractor.Position;
 import com.gitplex.symbolextractor.Range;
 import com.gitplex.symbolextractor.Symbol;
+import com.gitplex.symbolextractor.TokenPosition;
 import com.gitplex.symbolextractor.java.symbols.ui.CompilationUnitPanel;
 
 public class CompilationUnit extends Symbol {
@@ -15,8 +15,8 @@ public class CompilationUnit extends Symbol {
 	
 	private String packageName;
 
-	public CompilationUnit(@Nullable String packageName, Position from, Position to) {
-		super(null, null, from, to);
+	public CompilationUnit(@Nullable String packageName, @Nullable TokenPosition position) {
+		super(null, null, position);
 		
 		this.packageName = packageName;
 	}

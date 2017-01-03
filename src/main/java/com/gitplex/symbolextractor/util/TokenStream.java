@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.gitplex.symbolextractor.ExtractException;
-import com.gitplex.symbolextractor.Position;
+import com.gitplex.symbolextractor.TokenPosition;
 
 /**
  * Token stream holds a list of tokens parsed from source file, and provides various 
@@ -62,7 +62,7 @@ public class TokenStream {
 			for (com.gitplex.jsyntax.Token jsyntaxToken: tokensInLine) {
 				int nextCh = ch + jsyntaxToken.getText().length();
 				tokens.add(new Token(typeMapper.getType(jsyntaxToken), jsyntaxToken.getText(), 
-						new Position(line, ch), new Position(line, nextCh)));
+						new TokenPosition(line, ch, line, nextCh)));
 				ch = nextCh;
 			}
 			line++;

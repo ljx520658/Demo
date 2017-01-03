@@ -2,7 +2,9 @@ package com.gitplex.symbolextractor.util;
 
 import java.io.Serializable;
 
-import com.gitplex.symbolextractor.Position;
+import javax.annotation.Nullable;
+
+import com.gitplex.symbolextractor.TokenPosition;
 
 /**
  * A simplified version of ANTLR lexer token
@@ -14,15 +16,13 @@ public class Token implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	static final Token EOF = new Token(org.antlr.v4.runtime.Token.EOF, "", Position.NONE, Position.NONE);
+	static final Token EOF = new Token(org.antlr.v4.runtime.Token.EOF, "", null);
 	
 	private final int type;
 	
 	private final String text;
 	
-	private final Position from;
-	
-	private final Position to;
+	private final TokenPosition position;
 	
 	/**
 	 * Constructing the token from ANTLR lexer token
@@ -33,8 +33,8 @@ public class Token implements Serializable {
 	public Token(org.antlr.v4.runtime.Token antlrToken) {
 		type = antlrToken.getType();
 		text = antlrToken.getText();
-		from = new Position(antlrToken.getLine()-1, antlrToken.getCharPositionInLine());
-		to = new Position(antlrToken.getLine()-1, antlrToken.getCharPositionInLine()+text.length());
+		position = new TokenPosition(antlrToken.getLine()-1, antlrToken.getCharPositionInLine(), 
+				antlrToken.getLine()-1, antlrToken.getCharPositionInLine()+text.length());
 	}
 
 	/**
@@ -47,15 +47,14 @@ public class Token implements Serializable {
 	 * @param pos
 	 * 			position of the token, use <tt>null</tt> for EOF token
 	 */
-	public Token(int type, String text, Position from, Position to) {
+	public Token(int type, String text, @Nullable TokenPosition position) {
 		this.type = type;
 		this.text = text;
-		this.from = from;
-		this.to = to;
+		this.position = position;
 	}
 	
-	public Token(Enum<?> type, String text, Position from, Position to) {
-		this(type.ordinal(), text, from, to);
+	public Token(Enum<?> type, String text, @Nullable TokenPosition position) {
+		this(type.ordinal(), text, position);
 	}
 	
 	/**
@@ -136,12 +135,9 @@ public class Token implements Serializable {
 		return text;
 	}
 
-	public Position getFrom() {
-		return from;
-	}
-
-	public Position getTo() {
-		return to;
+	@Nullable
+	public TokenPosition getPosition() {
+		return position;
 	}
 
 	/**

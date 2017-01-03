@@ -304,7 +304,7 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor {
 			ReturnStatementTree returnStatement = (ReturnStatementTree) statement;
 			SyntaxToken token = returnStatement.returnKeyword();
 			AssignedSymbol assignedSymbol = new AssignedSymbol(parent, null, 
-					JavaScriptSymbol.getFrom(token), JavaScriptSymbol.getTo(token), "return", null);
+					JavaScriptSymbol.getPosition(token), "return", null);
 			symbols.add(assignedSymbol);
 			collect(returnStatement.expression(), parent, symbols, 
 					Lists.newArrayList(assignedSymbol), DeclarationType.NORMAL);

@@ -6,9 +6,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.wicket.Component;
 import org.sonar.plugins.javascript.api.tree.lexical.SyntaxToken;
 
-import com.gitplex.symbolextractor.Position;
 import com.gitplex.symbolextractor.Range;
 import com.gitplex.symbolextractor.Symbol;
+import com.gitplex.symbolextractor.TokenPosition;
 import com.gitplex.symbolextractor.javascript.symbols.ui.ReferenceSymbolPanel;
 
 public class AssignedSymbol extends JavaScriptSymbol {
@@ -20,8 +20,8 @@ public class AssignedSymbol extends JavaScriptSymbol {
 	private final String object;
 	
 	public AssignedSymbol(@Nullable Symbol parent, @Nullable String indexName, 
-			Position from, Position to, String displayName, @Nullable String object) {
-		super(parent, indexName, from, to);
+			TokenPosition position, String displayName, @Nullable String object) {
+		super(parent, indexName, position);
 		this.displayName = displayName;
 		this.object = object;
 	}

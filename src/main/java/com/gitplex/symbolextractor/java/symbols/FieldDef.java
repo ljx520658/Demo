@@ -6,9 +6,9 @@ import javax.annotation.Nullable;
 
 import org.apache.wicket.Component;
 
-import com.gitplex.symbolextractor.Position;
 import com.gitplex.symbolextractor.Range;
 import com.gitplex.symbolextractor.Symbol;
+import com.gitplex.symbolextractor.TokenPosition;
 import com.gitplex.symbolextractor.java.symbols.ui.FieldDefPanel;
 
 public class FieldDef extends Symbol {
@@ -19,9 +19,9 @@ public class FieldDef extends Symbol {
 	
 	private final List<Modifier> modifiers;
 	
-	public FieldDef(TypeDef parent, String fieldName, Position from, Position to, 
+	public FieldDef(TypeDef parent, String fieldName, TokenPosition position, 
 			@Nullable String type, List<Modifier> modifiers) {
-		super(parent, fieldName, from, to);
+		super(parent, fieldName, position);
 		
 		this.type = type;
 		this.modifiers = modifiers;

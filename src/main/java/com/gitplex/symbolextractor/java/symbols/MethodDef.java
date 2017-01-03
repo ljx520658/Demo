@@ -6,9 +6,9 @@ import javax.annotation.Nullable;
 
 import org.apache.wicket.Component;
 
-import com.gitplex.symbolextractor.Position;
 import com.gitplex.symbolextractor.Range;
 import com.gitplex.symbolextractor.Symbol;
+import com.gitplex.symbolextractor.TokenPosition;
 import com.gitplex.symbolextractor.java.symbols.ui.MethodDefPanel;
 
 public class MethodDef extends Symbol {
@@ -21,9 +21,9 @@ public class MethodDef extends Symbol {
 
 	private final List<Modifier> modifiers;
 	
-	public MethodDef(TypeDef parent, String methodName, Position from, Position to, 
+	public MethodDef(TypeDef parent, String methodName, TokenPosition position, 
 			@Nullable String type, @Nullable String params, List<Modifier> modifiers) {
-		super(parent, methodName, from, to);
+		super(parent, methodName, position);
 		
 		this.type = type;
 		this.params = params;

@@ -23,9 +23,7 @@ public abstract class Symbol implements Serializable {
 	
 	private final String indexName;
 	
-	private final Position from;
-	
-	private final Position to;
+	private final TokenPosition position;
 	
 	/**
 	 * Construct a symbol
@@ -38,14 +36,13 @@ public abstract class Symbol implements Serializable {
 	 * 			does not need to be indexed for search and cross referenced. For 
 	 * 			instance a Java package should be displayed in outline, but does 
 	 * 			not need to be indexed
-	 * @param pos
+	 * @param position
 	 * 			position of the symbol in source file
 	 */
-	public Symbol(@Nullable Symbol parent, @Nullable String indexName, Position from, Position to) {
+	public Symbol(@Nullable Symbol parent, @Nullable String indexName, @Nullable TokenPosition position) {
 		this.parent = parent;
 		this.indexName = indexName;
-		this.from = from;
-		this.to = to;
+		this.position = position;
 	}
 	
 	public Symbol getParent() {
@@ -64,12 +61,9 @@ public abstract class Symbol implements Serializable {
 		return indexName;
 	}
 
-	public Position getFrom() {
-		return from;
-	}
-
-	public Position getTo() {
-		return to;
+	@Nullable
+	public TokenPosition getPosition() {
+		return position;
 	}
 
 	public int score() {
