@@ -39,7 +39,7 @@ public class SymbolExtractors {
 	 * 			symbol extractor of specified file, or <tt>null</tt> if not found
 	 */
 	@Nullable
-	public SymbolExtractor of(String fileName) {
+	public static SymbolExtractor of(String fileName) {
 		for (SymbolExtractor extractor: extractorSet) {
 			if (extractor.accept(fileName))
 				return extractor;
@@ -47,7 +47,7 @@ public class SymbolExtractors {
 		return null;
 	}
 
-	public String getVersions() {
+	public static String getVersions() {
 		List<String> versions = new ArrayList<>();
 		
 		for (SymbolExtractor extractor: extractorSet) 
