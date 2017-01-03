@@ -6,4 +6,8 @@ public interface SymbolExtractor {
 	
 	List<Symbol> extract(String source) throws ExtractException;
 	
+	boolean accept(String fileName);
+	
+	int getVersion();
+	
 }

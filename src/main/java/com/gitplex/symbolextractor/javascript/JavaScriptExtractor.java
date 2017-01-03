@@ -50,9 +50,10 @@ import org.sonar.plugins.javascript.api.tree.statement.StatementTree;
 import org.sonar.plugins.javascript.api.tree.statement.VariableDeclarationTree;
 import org.sonar.plugins.javascript.api.tree.statement.VariableStatementTree;
 
+import com.gitplex.symbolextractor.AbstractSymbolExtractor;
 import com.gitplex.symbolextractor.ExtractException;
 import com.gitplex.symbolextractor.Symbol;
-import com.gitplex.symbolextractor.SymbolExtractor;
+import com.gitplex.symbolextractor.javascript.symbols.AssignedSymbol;
 import com.gitplex.symbolextractor.javascript.symbols.ClassSymbol;
 import com.gitplex.symbolextractor.javascript.symbols.DeclarationType;
 import com.gitplex.symbolextractor.javascript.symbols.FunctionSymbol;
@@ -60,11 +61,10 @@ import com.gitplex.symbolextractor.javascript.symbols.JavaScriptSymbol;
 import com.gitplex.symbolextractor.javascript.symbols.MethodAccessorType;
 import com.gitplex.symbolextractor.javascript.symbols.MethodSymbol;
 import com.gitplex.symbolextractor.javascript.symbols.PropertySymbol;
-import com.gitplex.symbolextractor.javascript.symbols.AssignedSymbol;
 import com.gitplex.symbolextractor.javascript.symbols.VariableSymbol;
 import com.google.common.collect.Lists;
 
-public class JavaScriptExtractor implements SymbolExtractor {
+public class JavaScriptExtractor extends AbstractSymbolExtractor {
 
 	@Override
 	public List<Symbol> extract(String source) throws ExtractException {
@@ -454,6 +454,16 @@ public class JavaScriptExtractor implements SymbolExtractor {
 				collect(assignmentExpression.expression(), parent, symbols, assignedSymbols, type);
 			}
 		}
+	}
+	
+	@Override
+	public int getVersion() {
+		return 1;
+	}
+
+	@Override
+	public boolean accept(String fileName) {
+		return acceptExtensions(fileName, "java");
 	}
 	
 }

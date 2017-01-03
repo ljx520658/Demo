@@ -45,7 +45,9 @@ import org.antlr.v4.runtime.ANTLRInputStream;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 
-import com.gitplex.symbolextractor.SymbolExtractor;
+import com.gitplex.symbolextractor.AbstractSymbolExtractor;
+import com.gitplex.symbolextractor.Position;
+import com.gitplex.symbolextractor.Symbol;
 import com.gitplex.symbolextractor.java.symbols.CompilationUnit;
 import com.gitplex.symbolextractor.java.symbols.FieldDef;
 import com.gitplex.symbolextractor.java.symbols.MethodDef;
@@ -54,12 +56,10 @@ import com.gitplex.symbolextractor.java.symbols.TypeDef;
 import com.gitplex.symbolextractor.util.Token;
 import com.gitplex.symbolextractor.util.TokenFilter;
 import com.gitplex.symbolextractor.util.TokenStream;
-import com.gitplex.symbolextractor.Symbol;
-import com.gitplex.symbolextractor.Position;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
-public class JavaExtractor implements SymbolExtractor {
+public class JavaExtractor extends AbstractSymbolExtractor {
 	
 	private static final int[] PRIMITIVES = new int[]{
 		FLOAT, INT, LONG, BOOLEAN, CHAR, BYTE, SHORT, DOUBLE, VOID};
@@ -616,5 +616,15 @@ public class JavaExtractor implements SymbolExtractor {
 		return typeName;
 	}
 
+	@Override
+	public int getVersion() {
+		return 1;
+	}
+
+	@Override
+	public boolean accept(String fileName) {
+		return acceptExtensions(fileName, "java");
+	}
+	
 }
 
