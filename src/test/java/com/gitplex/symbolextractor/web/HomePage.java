@@ -148,6 +148,7 @@ public class HomePage extends WebPage {
 				protected Component newContentComponent(String id, IModel<Symbol> nodeModel) {
 					Fragment fragment = new Fragment(id, "outlineNodeFrag", HomePage.this);
 					Symbol symbol = nodeModel.getObject();
+					fragment.add(symbol.renderIcon("icon"));
 					fragment.add(symbol.render("symbol", null));
 					
 					return fragment;

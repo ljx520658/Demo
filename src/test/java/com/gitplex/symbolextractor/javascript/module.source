@@ -6,6 +6,3 @@ export const test = function() {
 export function test() {
 	this.name = 'robin';
 };
-import * as person from 'person.js';
-import {pen as Pen} from 'pen.js';
- 

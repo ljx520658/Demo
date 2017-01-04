@@ -22,13 +22,10 @@ import org.sonar.plugins.javascript.api.tree.declaration.ExportClauseTree;
 import org.sonar.plugins.javascript.api.tree.declaration.ExportDefaultBinding;
 import org.sonar.plugins.javascript.api.tree.declaration.FunctionDeclarationTree;
 import org.sonar.plugins.javascript.api.tree.declaration.FunctionTree;
-import org.sonar.plugins.javascript.api.tree.declaration.ImportClauseTree;
-import org.sonar.plugins.javascript.api.tree.declaration.ImportDeclarationTree;
 import org.sonar.plugins.javascript.api.tree.declaration.InitializedBindingElementTree;
 import org.sonar.plugins.javascript.api.tree.declaration.MethodDeclarationTree;
 import org.sonar.plugins.javascript.api.tree.declaration.NamedExportDeclarationTree;
 import org.sonar.plugins.javascript.api.tree.declaration.ParameterListTree;
-import org.sonar.plugins.javascript.api.tree.declaration.SpecifierListTree;
 import org.sonar.plugins.javascript.api.tree.declaration.SpecifierTree;
 import org.sonar.plugins.javascript.api.tree.expression.ArrowFunctionTree;
 import org.sonar.plugins.javascript.api.tree.expression.AssignmentExpressionTree;
@@ -161,15 +158,16 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor {
 	
 	private void collect(Tree tree, Symbol parent, List<Symbol> symbols) {
 		if (tree instanceof ScriptTree) {
-			for (Tree item: ((ScriptTree)tree).items().items()) {
-				collect(item, parent, symbols);
+			ScriptTree script = (ScriptTree) tree;
+			if (script.items() != null && script.items().items() != null) {
+				for (Tree item: script.items().items()) {
+					collect(item, parent, symbols);
+				}
 			}
 		} else if (tree instanceof StatementTree) {
 			collect((StatementTree)tree, parent, symbols);
 		} else if (tree instanceof NamedExportDeclarationTree) {
 			collect((NamedExportDeclarationTree)tree, parent, symbols);
-		} else if (tree instanceof ImportDeclarationTree) {
-			collect((ImportDeclarationTree)tree, parent, symbols);
 		} 
 	}
 	
@@ -209,33 +207,6 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor {
 		}
 		builder.append(")");
 		return builder.toString();
-	}
-	
-	private void collect(ImportDeclarationTree importDeclaration, Symbol parent, List<Symbol> symbols) {
-		if (importDeclaration.importClause() instanceof ImportClauseTree) {
-			ImportClauseTree importClause = (ImportClauseTree) importDeclaration.importClause();
-			if (importClause.namedImport() instanceof SpecifierListTree) {
-				SpecifierListTree specifierList = (SpecifierListTree) importClause.namedImport();
-				for (SpecifierTree specifier: specifierList.specifiers()) {
-					collect(specifier, parent, symbols);
-				}
-			} else if (importClause.namedImport() instanceof SpecifierTree) {
-				collect((SpecifierTree)importClause.namedImport(), parent, symbols);
-			}
-			IdentifierTree defaultImport = importClause.defaultImport();
-			if (defaultImport != null) {
-				symbols.add(new VariableSymbol(parent, defaultImport.identifierToken(), DeclarationType.IMPORT));
-			}
-		}
-	}
-	
-	private void collect(SpecifierTree specifier, Symbol parent, List<Symbol> symbols) {
-		IdentifierTree identifier = specifier.localName();
-		if (identifier != null) {
-			symbols.add(new VariableSymbol(parent, identifier.identifierToken(), DeclarationType.IMPORT));
-		} else if (specifier.name() instanceof IdentifierTree) {
-			symbols.add(new VariableSymbol(parent, ((IdentifierTree)specifier.name()).identifierToken(), DeclarationType.IMPORT));
-		}
 	}
 	
 	private void collect(NamedExportDeclarationTree namedExportDeclaration, Symbol parent, List<Symbol> symbols) {
@@ -463,7 +434,7 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor {
 
 	@Override
 	public boolean accept(String fileName) {
-		return acceptExtensions(fileName, "java");
+		return acceptExtensions(fileName, "js");
 	}
 	
 }
