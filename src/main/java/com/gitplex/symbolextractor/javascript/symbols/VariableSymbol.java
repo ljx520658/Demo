@@ -12,6 +12,7 @@ import com.gitplex.symbolextractor.Range;
 import com.gitplex.symbolextractor.Symbol;
 import com.gitplex.symbolextractor.javascript.symbols.ui.icon.IconLocator;
 import com.gitplex.symbolextractor.util.HighlightableLabel;
+import com.gitplex.symbolextractor.util.NoAntiCacheImage;
 
 public class VariableSymbol extends JavaScriptSymbol {
 
@@ -42,13 +43,13 @@ public class VariableSymbol extends JavaScriptSymbol {
 	public Image renderIcon(String componentId) {
 		Image icon;
 		if (declarationType == DeclarationType.EXPORT) { 
-			icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "exported_variable.png"));
+			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "exported_variable.png"));
 			icon.add(AttributeAppender.append("title", "exported variable"));
 		} else if (declarationType == DeclarationType.IMPORT) {
-			icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "imported_variable.png"));
+			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "imported_variable.png"));
 			icon.add(AttributeAppender.append("title", "imported variable"));
 		} else {
-			icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "variable.png"));
+			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "variable.png"));
 			icon.add(AttributeAppender.append("title", "variable"));
 		}
 		return icon;

@@ -12,6 +12,7 @@ import com.gitplex.symbolextractor.Range;
 import com.gitplex.symbolextractor.Symbol;
 import com.gitplex.symbolextractor.TokenPosition;
 import com.gitplex.symbolextractor.java.symbols.ui.icon.IconLocator;
+import com.gitplex.symbolextractor.util.NoAntiCacheImage;
 
 public class CompilationUnit extends Symbol {
 	
@@ -51,7 +52,7 @@ public class CompilationUnit extends Symbol {
 
 	@Override
 	public Image renderIcon(String componentId) {
-		Image icon = new Image("icon", new PackageResourceReference(IconLocator.class, "package_obj.png"));
+		Image icon = new NoAntiCacheImage("icon", new PackageResourceReference(IconLocator.class, "package_obj.png"));
 		icon.add(AttributeAppender.append("title", "package"));
 		return icon;
 	}

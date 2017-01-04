@@ -14,6 +14,7 @@ import com.gitplex.symbolextractor.Symbol;
 import com.gitplex.symbolextractor.TokenPosition;
 import com.gitplex.symbolextractor.java.symbols.ui.MethodDefPanel;
 import com.gitplex.symbolextractor.java.symbols.ui.icon.IconLocator;
+import com.gitplex.symbolextractor.util.NoAntiCacheImage;
 
 public class MethodDef extends Symbol {
 
@@ -83,16 +84,16 @@ public class MethodDef extends Symbol {
 	public Image renderIcon(String componentId) {
 		Image icon;
 		if (modifiers.contains(Modifier.PRIVATE)) {
-			icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "methpri_obj.png"));
+			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "methpri_obj.png"));
 			icon.add(AttributeAppender.append("title", "private method"));
 		}  else if (modifiers.contains(Modifier.PROTECTED)) {
-			icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "methpro_obj.png"));
+			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "methpro_obj.png"));
 			icon.add(AttributeAppender.append("title", "protected method"));
 		} else if (modifiers.contains(Modifier.PUBLIC)) {
-			icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "methpub_obj.png"));
+			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "methpub_obj.png"));
 			icon.add(AttributeAppender.append("title", "public method"));
 		} else {
-			icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "methdef_obj.png"));
+			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "methdef_obj.png"));
 			icon.add(AttributeAppender.append("title", "method"));
 		}
 		return icon;

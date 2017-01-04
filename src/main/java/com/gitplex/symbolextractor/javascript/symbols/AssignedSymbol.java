@@ -14,6 +14,7 @@ import com.gitplex.symbolextractor.Symbol;
 import com.gitplex.symbolextractor.TokenPosition;
 import com.gitplex.symbolextractor.javascript.symbols.ui.AssignedSymbolPanel;
 import com.gitplex.symbolextractor.javascript.symbols.ui.icon.IconLocator;
+import com.gitplex.symbolextractor.util.NoAntiCacheImage;
 
 public class AssignedSymbol extends JavaScriptSymbol {
 
@@ -66,10 +67,10 @@ public class AssignedSymbol extends JavaScriptSymbol {
 	public Image renderIcon(String componentId) {
 		Image icon;
 		if (object != null) {
-			icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "property.png"));
+			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "property.png"));
 			icon.add(AttributeAppender.append("title", "property"));
 		} else {
-			icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "object.png"));
+			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "object.png"));
 			icon.add(AttributeAppender.append("title", "object"));
 		}
 		return icon;

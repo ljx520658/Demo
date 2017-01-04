@@ -13,6 +13,7 @@ import com.gitplex.symbolextractor.Range;
 import com.gitplex.symbolextractor.Symbol;
 import com.gitplex.symbolextractor.javascript.symbols.ui.icon.IconLocator;
 import com.gitplex.symbolextractor.util.HighlightableLabel;
+import com.gitplex.symbolextractor.util.NoAntiCacheImage;
 
 public class ClassSymbol extends JavaScriptSymbol {
 
@@ -46,13 +47,13 @@ public class ClassSymbol extends JavaScriptSymbol {
 	public Image renderIcon(String componentId) {
 		Image icon;
 		if (declarationType == DeclarationType.EXPORT) { 
-			icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "exported_class.png"));
+			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "exported_class.png"));
 			icon.add(AttributeAppender.append("title", "exported class"));
 		} else if (declarationType == DeclarationType.IMPORT) {
-			icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "imported_class.png"));
+			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "imported_class.png"));
 			icon.add(AttributeAppender.append("title", "imported class"));
 		} else {
-			icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "class.png"));
+			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "class.png"));
 			icon.add(AttributeAppender.append("title", "class"));
 		}
 		return icon;

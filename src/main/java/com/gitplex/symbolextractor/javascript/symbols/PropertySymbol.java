@@ -12,6 +12,7 @@ import com.gitplex.symbolextractor.Range;
 import com.gitplex.symbolextractor.Symbol;
 import com.gitplex.symbolextractor.javascript.symbols.ui.icon.IconLocator;
 import com.gitplex.symbolextractor.util.HighlightableLabel;
+import com.gitplex.symbolextractor.util.NoAntiCacheImage;
 
 public class PropertySymbol extends JavaScriptSymbol {
 
@@ -33,7 +34,7 @@ public class PropertySymbol extends JavaScriptSymbol {
 
 	@Override
 	public Image renderIcon(String componentId) {
-		Image icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "property.png"));
+		Image icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "property.png"));
 		icon.add(AttributeAppender.append("title", "property"));
 		return icon;
 	}

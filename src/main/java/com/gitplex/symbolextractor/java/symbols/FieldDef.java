@@ -14,6 +14,7 @@ import com.gitplex.symbolextractor.Symbol;
 import com.gitplex.symbolextractor.TokenPosition;
 import com.gitplex.symbolextractor.java.symbols.ui.FieldDefPanel;
 import com.gitplex.symbolextractor.java.symbols.ui.icon.IconLocator;
+import com.gitplex.symbolextractor.util.NoAntiCacheImage;
 
 public class FieldDef extends Symbol {
 
@@ -69,16 +70,16 @@ public class FieldDef extends Symbol {
 	public Image renderIcon(String componentId) {
 		Image icon;
 		if (modifiers.contains(Modifier.PRIVATE)) {
-			icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "field_private_obj.png"));
+			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "field_private_obj.png"));
 			icon.add(AttributeAppender.append("title", "private field"));
 		}  else if (modifiers.contains(Modifier.PROTECTED)) {
-			icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "field_protected_obj.png"));
+			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "field_protected_obj.png"));
 			icon.add(AttributeAppender.append("title", "protected field"));
 		} else if (modifiers.contains(Modifier.PUBLIC)) {
-			icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "field_public_obj.png"));
+			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "field_public_obj.png"));
 			icon.add(AttributeAppender.append("title", "public field"));
 		} else {
-			icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "field_default_obj.png"));
+			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "field_default_obj.png"));
 			icon.add(AttributeAppender.append("title", "field"));
 		}
 		return icon;

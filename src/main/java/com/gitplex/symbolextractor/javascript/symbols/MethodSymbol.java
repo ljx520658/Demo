@@ -12,6 +12,7 @@ import com.gitplex.symbolextractor.Range;
 import com.gitplex.symbolextractor.Symbol;
 import com.gitplex.symbolextractor.javascript.symbols.ui.MethodSymbolPanel;
 import com.gitplex.symbolextractor.javascript.symbols.ui.icon.IconLocator;
+import com.gitplex.symbolextractor.util.NoAntiCacheImage;
 
 public class MethodSymbol extends JavaScriptSymbol {
 
@@ -48,7 +49,7 @@ public class MethodSymbol extends JavaScriptSymbol {
 
 	@Override
 	public Image renderIcon(String componentId) {
-		Image icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "method.png"));
+		Image icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "method.png"));
 		icon.add(AttributeAppender.append("title", "method"));
 		return icon;
 	}

@@ -14,6 +14,7 @@ import com.gitplex.symbolextractor.Symbol;
 import com.gitplex.symbolextractor.TokenPosition;
 import com.gitplex.symbolextractor.java.symbols.ui.icon.IconLocator;
 import com.gitplex.symbolextractor.util.HighlightableLabel;
+import com.gitplex.symbolextractor.util.NoAntiCacheImage;
 
 public class TypeDef extends Symbol {
 
@@ -78,26 +79,26 @@ public class TypeDef extends Symbol {
 	public Image renderIcon(String componentId) {
 		Image icon;
 		if (kind == Kind.ENUM) {
-			icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "enum_obj.png"));
+			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "enum_obj.png"));
 			icon.add(AttributeAppender.append("title", "enum"));
 		} else if (kind == Kind.INTERFACE) {
-			icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "int_obj.png"));
+			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "int_obj.png"));
 			icon.add(AttributeAppender.append("title", "interface"));
 		} else if (kind == Kind.ANNOTATION) {
-			icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "annotation_obj.png"));
+			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "annotation_obj.png"));
 			icon.add(AttributeAppender.append("title", "annotation"));
 		} else if (kind == Kind.CLASS) {
 			if (modifiers.contains(Modifier.PRIVATE)) {
-				icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "innerclass_private_obj.png"));
+				icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "innerclass_private_obj.png"));
 				icon.add(AttributeAppender.append("title", "private inner class"));
 			}  else if (modifiers.contains(Modifier.PROTECTED)) {
-				icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "innerclass_protected_obj.png"));
+				icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "innerclass_protected_obj.png"));
 				icon.add(AttributeAppender.append("title", "protected inner class"));
 			} else if (modifiers.contains(Modifier.PUBLIC)) {
-				icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "class_obj.png"));
+				icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "class_obj.png"));
 				icon.add(AttributeAppender.append("title", "public class"));
 			} else {
-				icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "class_default_obj.png"));
+				icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "class_default_obj.png"));
 				icon.add(AttributeAppender.append("title", "class"));
 			}
 		} else {
