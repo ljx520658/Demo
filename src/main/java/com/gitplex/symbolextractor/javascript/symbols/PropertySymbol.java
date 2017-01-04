@@ -3,11 +3,15 @@ package com.gitplex.symbolextractor.javascript.symbols;
 import javax.annotation.Nullable;
 
 import org.apache.wicket.Component;
+import org.apache.wicket.behavior.AttributeAppender;
+import org.apache.wicket.markup.html.image.Image;
+import org.apache.wicket.request.resource.PackageResourceReference;
 import org.sonar.plugins.javascript.api.tree.lexical.SyntaxToken;
 
 import com.gitplex.symbolextractor.Range;
 import com.gitplex.symbolextractor.Symbol;
-import com.gitplex.symbolextractor.javascript.symbols.ui.PropertySymbolPanel;
+import com.gitplex.symbolextractor.javascript.symbols.ui.icon.IconLocator;
+import com.gitplex.symbolextractor.util.HighlightableLabel;
 
 public class PropertySymbol extends JavaScriptSymbol {
 
@@ -24,7 +28,14 @@ public class PropertySymbol extends JavaScriptSymbol {
 
 	@Override
 	public Component render(String componentId, Range highlight) {
-		return new PropertySymbolPanel(componentId, this, highlight);
+		return new HighlightableLabel(componentId, getIndexName(), highlight);
+	}
+
+	@Override
+	public Image renderIcon(String componentId) {
+		Image icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "property.png"));
+		icon.add(AttributeAppender.append("title", "property"));
+		return icon;
 	}
 
 }

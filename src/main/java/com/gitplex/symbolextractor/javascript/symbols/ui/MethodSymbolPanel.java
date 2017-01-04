@@ -2,6 +2,7 @@ package com.gitplex.symbolextractor.javascript.symbols.ui;
 
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.panel.Panel;
 
 import com.gitplex.symbolextractor.Range;
 import com.gitplex.symbolextractor.javascript.symbols.MethodAccessorType;
@@ -9,7 +10,7 @@ import com.gitplex.symbolextractor.javascript.symbols.MethodSymbol;
 import com.gitplex.symbolextractor.util.HighlightableLabel;
 
 @SuppressWarnings("serial")
-public class MethodSymbolPanel extends JavaScriptSymbolPanel {
+public class MethodSymbolPanel extends Panel {
 
 	private final MethodSymbol symbol;
 	

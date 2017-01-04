@@ -5,6 +5,7 @@ import java.io.Serializable;
 import javax.annotation.Nullable;
 
 import org.apache.wicket.Component;
+import org.apache.wicket.markup.html.image.Image;
 
 /**
  * Represents a symbol extracted from source file. Implementation should preserve enough 
@@ -60,7 +61,9 @@ public abstract class Symbol implements Serializable {
 	public String getIndexName() {
 		return indexName;
 	}
-
+	
+	public abstract Image renderIcon(String componentId);
+	
 	@Nullable
 	public TokenPosition getPosition() {
 		return position;

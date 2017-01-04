@@ -2,9 +2,7 @@ package com.gitplex.symbolextractor;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -14,22 +12,23 @@ import com.google.common.base.Joiner;
 
 import javassist.Modifier;
 
-public class SymbolExtractors {
+public class SymbolExtractorRegistry {
 
-	private static final Set<SymbolExtractor> extractorSet;
+	private static final List<SymbolExtractor> extractors;
 	
 	static {
-		extractorSet = new HashSet<>();
-		Reflections reflections = new Reflections(SymbolExtractors.class.getPackage().getName());
+		extractors = new ArrayList<>();
+		Reflections reflections = new Reflections(SymbolExtractorRegistry.class.getPackage().getName());
 		for (Class<? extends SymbolExtractor> extractorClass: reflections.getSubTypesOf(SymbolExtractor.class)) {
 			if (!Modifier.isAbstract(extractorClass.getModifiers())) {
 				try {
-					extractorSet.add(extractorClass.newInstance());
+					extractors.add(extractorClass.newInstance());
 				} catch (InstantiationException | IllegalAccessException e) {
 					throw new RuntimeException(e);
 				}
 			}
 		}
+		extractors.sort((o1, o2)->o1.getClass().getName().compareTo(o2.getClass().getName()));
 	}
 	
 	/**
@@ -39,18 +38,18 @@ public class SymbolExtractors {
 	 * 			symbol extractor of specified file, or <tt>null</tt> if not found
 	 */
 	@Nullable
-	public static SymbolExtractor of(String fileName) {
-		for (SymbolExtractor extractor: extractorSet) {
+	public static SymbolExtractor getExtractor(String fileName) {
+		for (SymbolExtractor extractor: extractors) {
 			if (extractor.accept(fileName))
 				return extractor;
 		}
 		return null;
 	}
 
-	public static String getVersions() {
+	public static String getVersion() {
 		List<String> versions = new ArrayList<>();
 		
-		for (SymbolExtractor extractor: extractorSet) 
+		for (SymbolExtractor extractor: extractors) 
 			versions.add(extractor.getClass().getName() + ":" + extractor.getVersion());
 		
 		Collections.sort(versions);

@@ -4,12 +4,16 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.wicket.Component;
+import org.apache.wicket.behavior.AttributeAppender;
+import org.apache.wicket.markup.html.image.Image;
+import org.apache.wicket.request.resource.PackageResourceReference;
 import org.sonar.plugins.javascript.api.tree.lexical.SyntaxToken;
 
 import com.gitplex.symbolextractor.Range;
 import com.gitplex.symbolextractor.Symbol;
 import com.gitplex.symbolextractor.TokenPosition;
-import com.gitplex.symbolextractor.javascript.symbols.ui.ReferenceSymbolPanel;
+import com.gitplex.symbolextractor.javascript.symbols.ui.AssignedSymbolPanel;
+import com.gitplex.symbolextractor.javascript.symbols.ui.icon.IconLocator;
 
 public class AssignedSymbol extends JavaScriptSymbol {
 
@@ -47,7 +51,7 @@ public class AssignedSymbol extends JavaScriptSymbol {
 	
 	@Override
 	public Component render(String componentId, Range highlight) {
-		return new ReferenceSymbolPanel(componentId, this, highlight);
+		return new AssignedSymbolPanel(componentId, this, highlight);
 	}
 
 	public String getRootObject() {
@@ -57,5 +61,18 @@ public class AssignedSymbol extends JavaScriptSymbol {
 			return super.getIndexName();
 		}
 	}
-	
+
+	@Override
+	public Image renderIcon(String componentId) {
+		Image icon;
+		if (object != null) {
+			icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "property.png"));
+			icon.add(AttributeAppender.append("title", "property"));
+		} else {
+			icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "object.png"));
+			icon.add(AttributeAppender.append("title", "object"));
+		}
+		return icon;
+	}
+
 }

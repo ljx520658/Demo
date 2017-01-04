@@ -1,16 +1,15 @@
 package com.gitplex.symbolextractor.javascript.symbols.ui;
 
-import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
+import org.apache.wicket.markup.html.panel.Panel;
 
 import com.gitplex.symbolextractor.Range;
 import com.gitplex.symbolextractor.javascript.symbols.FunctionSymbol;
-import com.gitplex.symbolextractor.javascript.symbols.DeclarationType;
 import com.gitplex.symbolextractor.util.HighlightableLabel;
 
 @SuppressWarnings("serial")
-public class FunctionSymbolPanel extends JavaScriptSymbolPanel {
+public class FunctionSymbolPanel extends Panel {
 
 	private final FunctionSymbol symbol;
 	
@@ -25,18 +24,6 @@ public class FunctionSymbolPanel extends JavaScriptSymbolPanel {
 	@Override
 	protected void onInitialize() {
 		super.onInitialize();
-		
-		if (symbol.getDeclarationType() == DeclarationType.EXPORT) {
-			add(new WebMarkupContainer("icon")
-					.add(AttributeAppender.append("class", "export"))
-					.add(AttributeAppender.replace("title", "exported function")));
-		} else if (symbol.getDeclarationType() == DeclarationType.IMPORT) {
-			add(new WebMarkupContainer("icon")
-					.add(AttributeAppender.append("class", "import"))
-					.add(AttributeAppender.replace("title", "imported function")));
-		} else {
-			add(new WebMarkupContainer("icon"));
-		}
 			
 		if (symbol.getIndexName() != null)
 			add(new HighlightableLabel("name", symbol.getIndexName(), highlight));

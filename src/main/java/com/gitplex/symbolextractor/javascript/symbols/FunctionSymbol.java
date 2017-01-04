@@ -3,11 +3,15 @@ package com.gitplex.symbolextractor.javascript.symbols;
 import javax.annotation.Nullable;
 
 import org.apache.wicket.Component;
+import org.apache.wicket.behavior.AttributeAppender;
+import org.apache.wicket.markup.html.image.Image;
+import org.apache.wicket.request.resource.PackageResourceReference;
 import org.sonar.plugins.javascript.api.tree.lexical.SyntaxToken;
 
 import com.gitplex.symbolextractor.Range;
 import com.gitplex.symbolextractor.Symbol;
 import com.gitplex.symbolextractor.javascript.symbols.ui.FunctionSymbolPanel;
+import com.gitplex.symbolextractor.javascript.symbols.ui.icon.IconLocator;
 
 public class FunctionSymbol extends JavaScriptSymbol {
 
@@ -41,4 +45,20 @@ public class FunctionSymbol extends JavaScriptSymbol {
 		return new FunctionSymbolPanel(componentId, this, highlight);
 	}
 
+	@Override
+	public Image renderIcon(String componentId) {
+		Image icon;
+		if (declarationType == DeclarationType.EXPORT) { 
+			icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "exported_function.png"));
+			icon.add(AttributeAppender.append("title", "exported function"));
+		} else if (declarationType == DeclarationType.IMPORT) {
+			icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "imported_function.png"));
+			icon.add(AttributeAppender.append("title", "imported function"));
+		} else {
+			icon = new Image(componentId, new PackageResourceReference(IconLocator.class, "function.png"));
+			icon.add(AttributeAppender.append("title", "function"));
+		}
+		return icon;
+	}
+	
 }
