@@ -23,4 +23,9 @@ public class Range implements Serializable {
 		return to;
 	}
 
+	@Override
+	public String toString() {
+		return from + "-" + to;
+	}
+	
 }
