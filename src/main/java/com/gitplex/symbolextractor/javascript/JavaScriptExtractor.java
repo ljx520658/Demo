@@ -362,8 +362,10 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor {
 				collect(classTree.methods(), parent, symbols);
 			}
 		} else if (expression instanceof IdentifierTree) {
-			for (Symbol assignedSymbol: assignedSymbols) {
-				if (assignedSymbol instanceof AssignedSymbol) {
+			for (Symbol symbol: assignedSymbols) {
+				if (symbol instanceof AssignedSymbol) {
+					AssignedSymbol assignedSymbol = (AssignedSymbol) symbol;
+					if (assignedSymbol.getObject())
 				}
 			}
 		}
