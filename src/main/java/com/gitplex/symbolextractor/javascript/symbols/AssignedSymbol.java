@@ -37,6 +37,7 @@ public class AssignedSymbol extends JavaScriptSymbol {
 		this.object = object;
 	}
 	
+	@Nullable
 	public String getObject() {
 		return object;
 	}

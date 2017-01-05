@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nullable;
+import javax.lang.model.type.DeclaredType;
 
 import org.apache.commons.io.Charsets;
 import org.apache.commons.lang.StringUtils;
@@ -314,6 +315,12 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor {
 			collect(parenthesisedExpression.expression(), parent, symbols, assignedSymbols, type);
 		} else if (expression instanceof CallExpressionTree) {
 			CallExpressionTree callExpression = (CallExpressionTree) expression;
+			if (callExpression.callee() instanceof IdentifierTree) {
+				IdentifierTree callingFunction = (IdentifierTree) callExpression.callee();
+				if (callingFunction.name().equals("require")) {
+					symbols.removeAll(assignedSymbols);
+				}
+			}
 			collect(callExpression.callee(), parent, symbols, Lists.newArrayList(), DeclarationType.NORMAL);
 			for (Tree parameter: callExpression.arguments().parameters()) {
 				if (parameter instanceof ExpressionTree) {
@@ -353,6 +360,11 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor {
 				parent = new ClassSymbol(parent, classTree.name()!=null?classTree.name().identifierToken():null, DeclarationType.NORMAL);
 				symbols.add(parent);
 				collect(classTree.methods(), parent, symbols);
+			}
+		} else if (expression instanceof IdentifierTree) {
+			for (Symbol assignedSymbol: assignedSymbols) {
+				if (assignedSymbol instanceof AssignedSymbol) {
+				}
 			}
 		}
 	}
@@ -429,12 +441,12 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor {
 	
 	@Override
 	public int getVersion() {
-		return 1;
+		return 2;
 	}
 
 	@Override
 	public boolean accept(String fileName) {
-		return acceptExtensions(fileName, "js");
+		return acceptExtensions(fileName, "js", "jsx");
 	}
 	
 }
