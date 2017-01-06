@@ -33,7 +33,11 @@ public class MethodSymbolPanel extends Panel {
 		else
 			add(new WebMarkupContainer("accessor").setVisible(false));
 		
+		/*
+		 * highlight only applies to indexed/searchable name
+		 */
 		add(new HighlightableLabel("name", symbol.getIndexName(), highlight));
+		
 		add(new Label("params", symbol.getParams()));
 	}
 

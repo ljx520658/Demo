@@ -87,16 +87,27 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 			}
 		}
 
+		/*
+		 * Remove all non-global variables, functions and classes. Method and property 
+		 * symbols are attached to its parent symbols (classes and object literals), 
+		 * and we will remove them later if their parents are removed. Referenced 
+		 * symbols might be defining properties of global objects, and will not be 
+		 * processed here 
+		 */
 		for (Iterator<JavaScriptSymbol> it = symbols.iterator(); it.hasNext();) {
 			JavaScriptSymbol symbol = it.next();
 			if (!symbol.isExported() && symbol.getParent() != null 
-					&& !(symbol instanceof ReferenceSymbol) 
-					&& !(symbol instanceof MethodSymbol) 
-					&& !(symbol instanceof PropertySymbol)) {
+					&& (symbol instanceof ClassSymbol 
+							|| symbol instanceof FunctionSymbol 
+							|| symbol instanceof VariableSymbol)) {
 				it.remove();
 			}
 		}
 		
+		/*
+		 * Now we check if root object of reference symbols are local symbols. If yes, 
+		 * we will remove them 
+		 */
 		for (Iterator<JavaScriptSymbol> it = symbols.iterator(); it.hasNext();) {
 			JavaScriptSymbol symbol = it.next();
 			if (!symbol.isExported() && symbol instanceof ReferenceSymbol) {
@@ -114,6 +125,12 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 			}
 		}
 
+		/*
+		 * Now we continue to remove pseudo symbols without properties. Pseudo symbols 
+		 * do not have index name, and are created to hold indexable properties, for 
+		 * instance we will create a pseudo symbol for return statement of function to 
+		 * hold returned object literals 
+		 */
 		Set<JavaScriptSymbol> hasChildren = new HashSet<>();
 		for (JavaScriptSymbol symbol: symbols) {
 			JavaScriptSymbol parent = (JavaScriptSymbol) symbol.getParent();
@@ -126,6 +143,11 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 				it.remove();
 		}
 		
+		/*
+		 * For remaining reference symbols, we add back their parents (local classes, 
+		 * functions or variables) if they've been removed in the first stage to make
+		 * the outline understandable 
+		 */
 		List<JavaScriptSymbol> addSymbols = new ArrayList<>();
 		Set<JavaScriptSymbol> symbolSet = new HashSet<>(symbols);
 		for (JavaScriptSymbol symbol: symbols) {
@@ -142,6 +164,10 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 		}
 		symbols.addAll(addSymbols);
 		
+		/*
+		 * The final step is to remove those non-reference symbols whose parents 
+		 * have been removed 
+		 */
 		List<JavaScriptSymbol> removeSymbols = new ArrayList<>();
 		for (JavaScriptSymbol symbol: symbols) {
 			if (!(symbol instanceof ReferenceSymbol)) {
@@ -213,6 +239,9 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 		return builder.toString();
 	}
 	
+	/*
+	 * process ES6 export statements
+	 */
 	private void collect(NamedExportDeclarationTree namedExportDeclaration, JavaScriptSymbol parent, List<JavaScriptSymbol> symbols) {
 		Tree object = namedExportDeclaration.object();
 		if (object instanceof ExportDefaultBinding) {
@@ -276,6 +305,11 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 			symbols.add(parent);
 			collect(classTree.methods(), parent, symbols);
 		} else if (statement instanceof ReturnStatementTree) {
+			/*
+			 * create a pseudo return reference symbol to hold properties 
+			 * discovered in return statement. These properties might be 
+			 * referenced by other files, so we need to index them
+			 */
 			ReturnStatementTree returnStatement = (ReturnStatementTree) statement;
 			SyntaxToken token = returnStatement.returnKeyword();
 			ReferenceSymbol referenceSymbol = new ReferenceSymbol(parent, null, 
@@ -293,6 +327,9 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 		}
 	}
 	
+	/*
+	 * BindingElementTree represents variable binding such as "var a" or "var [a,b]"
+	 */
 	private void collect(BindingElementTree bindingElement, JavaScriptSymbol parent, List<JavaScriptSymbol> symbols, boolean exported) {
 		List<JavaScriptSymbol> assignedSymbols = new ArrayList<>();
 		for (IdentifierTree identifier: bindingElement.bindingIdentifiers()) {
@@ -300,7 +337,11 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 			assignedSymbols.add(symbol);
 		}
 		symbols.addAll(assignedSymbols);
-		
+
+		/*
+		 *  variable is initialized, so we continue to check if there is something defining
+		 *  properties of the variables worthing to be indexed
+		 */
 		if (bindingElement instanceof InitializedBindingElementTree) {
 			InitializedBindingElementTree initializedBindingElement = (InitializedBindingElementTree) bindingElement;
 			collect((ExpressionTree)initializedBindingElement.right(), parent, symbols, assignedSymbols, exported);
@@ -316,7 +357,7 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 		} else if (expression instanceof ParenthesisedExpressionTree) {
 			ParenthesisedExpressionTree parenthesisedExpression = (ParenthesisedExpressionTree) expression;
 			collect(parenthesisedExpression.expression(), parent, symbols, assignedSymbols, exported);
-		} else if (expression instanceof NewExpressionTree) {
+		} else if (expression instanceof NewExpressionTree) { // new SomeClass(...)
 			NewExpressionTree newExpression = (NewExpressionTree) expression;
 			collect(newExpression.expression(), parent, symbols, Lists.newArrayList(), false);
 			for (Tree parameter: newExpression.arguments().parameters()) {
@@ -324,7 +365,7 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 					collect((ExpressionTree)parameter, parent, symbols, Lists.newArrayList(), false);
 				} 
 			}
-		} else if (expression instanceof CallExpressionTree) {
+		} else if (expression instanceof CallExpressionTree) { // call a function
 			CallExpressionTree callExpression = (CallExpressionTree) expression;
 			boolean processed = false;
 			
@@ -376,7 +417,7 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 					} 
 				}
 			}
-		} else if (expression instanceof FunctionTree) {
+		} else if (expression instanceof FunctionTree) { // an inline function declaration
 			if (!assignedSymbols.isEmpty()) {
 				for (JavaScriptSymbol assigned: assignedSymbols) {
 					collect(((FunctionTree)expression).body(), assigned, symbols);
@@ -409,6 +450,11 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 				collect(classTree.methods(), parent, symbols);
 			}
 		} else if (expression instanceof IdentifierTree || expression instanceof DotMemberExpressionTree) {
+			/*
+			 * capture CommonJS exported symbols of below form:
+			 * exports = someVar;
+			 * module.exports = someVar;  
+			 */
 			boolean exports = false;
 			for (JavaScriptSymbol assignedSymbol: assignedSymbols) {
 				if (assignedSymbol instanceof ReferenceSymbol) {

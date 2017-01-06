@@ -25,6 +25,9 @@ public class FunctionSymbolPanel extends Panel {
 	protected void onInitialize() {
 		super.onInitialize();
 			
+		/*
+		 * highlight only applies to indexed/searchable name
+		 */
 		if (symbol.getIndexName() != null)
 			add(new HighlightableLabel("name", symbol.getIndexName(), highlight));
 		else

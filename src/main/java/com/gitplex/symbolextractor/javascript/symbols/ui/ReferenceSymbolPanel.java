@@ -32,6 +32,9 @@ public class ReferenceSymbolPanel extends Panel {
 			add(new WebMarkupContainer("object").setVisible(false));
 		}
 		
+		/*
+		 * highlight only applies to indexed/searchable name
+		 */
 		add(new HighlightableLabel("property", symbol.getDisplayName(), highlight));
 	}
 
