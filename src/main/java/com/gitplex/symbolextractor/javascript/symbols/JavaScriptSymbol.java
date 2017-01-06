@@ -12,12 +12,16 @@ public abstract class JavaScriptSymbol extends Symbol {
 
 	private static final long serialVersionUID = 1L;
 	
-	public JavaScriptSymbol(@Nullable Symbol parent, @Nullable String indexName, TokenPosition position) {
+	private final boolean exported;
+	
+	public JavaScriptSymbol(@Nullable Symbol parent, @Nullable String indexName, TokenPosition position, boolean exported) {
 		super(parent, indexName, position);
+		this.exported = exported;
 	}
 	
-	public JavaScriptSymbol(@Nullable Symbol parent, @Nullable SyntaxToken token) {
+	public JavaScriptSymbol(@Nullable Symbol parent, @Nullable SyntaxToken token, boolean exported) {
 		super(parent, token!=null?removeQuotes(token.text()):null, getPosition(token));
+		this.exported = exported;
 	}
 	
 	public static TokenPosition getPosition(@Nullable SyntaxToken token) {
@@ -28,6 +32,15 @@ public abstract class JavaScriptSymbol extends Symbol {
 		return StringUtils.stripEnd(StringUtils.stripStart(name, "'\""), "'\"");
 	}
 	
+	public boolean isExported() {
+		return exported;
+	}
+
+	@Override
+	public boolean isPrimary() {
+		return isExported();
+	}
+
 	@Override
 	public String getScope() {
 		String scope;

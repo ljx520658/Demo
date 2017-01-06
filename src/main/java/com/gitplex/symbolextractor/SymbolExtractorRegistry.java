@@ -12,9 +12,10 @@ import com.google.common.base.Joiner;
 
 import javassist.Modifier;
 
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public class SymbolExtractorRegistry {
 
-	private static final List<SymbolExtractor> extractors;
+	private static final List<SymbolExtractor<Symbol>> extractors;
 	
 	static {
 		extractors = new ArrayList<>();
@@ -38,8 +39,8 @@ public class SymbolExtractorRegistry {
 	 * 			symbol extractor of specified file, or <tt>null</tt> if not found
 	 */
 	@Nullable
-	public static SymbolExtractor getExtractor(String fileName) {
-		for (SymbolExtractor extractor: extractors) {
+	public static SymbolExtractor<Symbol> getExtractor(String fileName) {
+		for (SymbolExtractor<Symbol> extractor: extractors) {
 			if (extractor.accept(fileName))
 				return extractor;
 		}
@@ -49,7 +50,7 @@ public class SymbolExtractorRegistry {
 	public static String getVersion() {
 		List<String> versions = new ArrayList<>();
 		
-		for (SymbolExtractor extractor: extractors) 
+		for (SymbolExtractor<Symbol> extractor: extractors) 
 			versions.add(extractor.getClass().getName() + ":" + extractor.getVersion());
 		
 		Collections.sort(versions);

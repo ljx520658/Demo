@@ -5,17 +5,17 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Panel;
 
 import com.gitplex.symbolextractor.Range;
-import com.gitplex.symbolextractor.javascript.symbols.AssignedSymbol;
+import com.gitplex.symbolextractor.javascript.symbols.ReferenceSymbol;
 import com.gitplex.symbolextractor.util.HighlightableLabel;
 
 @SuppressWarnings("serial")
-public class AssignedSymbolPanel extends Panel {
+public class ReferenceSymbolPanel extends Panel {
 
-	private final AssignedSymbol symbol;
+	private final ReferenceSymbol symbol;
 	
 	private final Range highlight;
 	
-	public AssignedSymbolPanel(String id, AssignedSymbol symbol, Range highlight) {
+	public ReferenceSymbolPanel(String id, ReferenceSymbol symbol, Range highlight) {
 		super(id);
 		this.symbol = symbol;
 		this.highlight = highlight;

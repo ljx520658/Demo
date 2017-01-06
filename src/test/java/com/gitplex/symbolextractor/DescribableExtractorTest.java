@@ -9,7 +9,7 @@ import org.junit.Assert;
 
 import com.google.common.io.Resources;
 
-public abstract class DescribableExtractorTest {
+public abstract class DescribableExtractorTest<T extends Symbol> {
 
 	/**
 	 * Describe specified symbol in specified context
@@ -26,14 +26,14 @@ public abstract class DescribableExtractorTest {
 	 * @return
 	 * 			Description of the symbol
 	 */
-	protected abstract String describe(List<Symbol> context, Symbol symbol);
+	protected abstract String describe(List<T> context, T symbol);
 
 	/**
 	 * This method describes the list of symbols into a string and compares it with expected string
 	 */
-	protected void verify(String expected, List<Symbol> symbols) {
+	protected void verify(String expected, List<T> symbols) {
 		StringBuilder builder = new StringBuilder();
-		for (Symbol symbol: symbols) {
+		for (T symbol: symbols) {
 			if (symbol.getParent() == null)
 				builder.append(describe(symbols, symbol));
 		}

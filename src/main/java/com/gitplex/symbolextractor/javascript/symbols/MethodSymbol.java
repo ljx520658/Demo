@@ -24,7 +24,7 @@ public class MethodSymbol extends JavaScriptSymbol {
 	
 	public MethodSymbol(@Nullable Symbol parent, SyntaxToken token, 
 			MethodAccessorType accessorType, String params) {
-		super(parent, token);
+		super(parent, token, false);
 		this.accessorType = accessorType;
 		this.params = params;
 	}
@@ -35,11 +35,6 @@ public class MethodSymbol extends JavaScriptSymbol {
 
 	public String getParams() {
 		return params;
-	}
-
-	@Override
-	public boolean isPrimary() {
-		return false;
 	}
 
 	@Override

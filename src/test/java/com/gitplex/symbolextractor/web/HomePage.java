@@ -36,7 +36,7 @@ import com.google.common.base.Throwables;
 @SuppressWarnings("serial")
 public class HomePage extends WebPage {
 	
-	private List<Symbol> symbols = new ArrayList<>();
+	private List<? extends Symbol> symbols = new ArrayList<>();
 	
 	private String error;
 	
@@ -44,6 +44,7 @@ public class HomePage extends WebPage {
 		super(parameters);
     }
 
+	@SuppressWarnings("rawtypes")
 	@Override
 	protected void onInitialize() {
 		super.onInitialize();
@@ -88,6 +89,7 @@ public class HomePage extends WebPage {
 		add(newOutline());
 	}
 	
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	private void onChange(AjaxRequestTarget target, String sourceCode, String extractorClassName) {
 		if (StringUtils.isNotBlank(sourceCode)) {
 			try {

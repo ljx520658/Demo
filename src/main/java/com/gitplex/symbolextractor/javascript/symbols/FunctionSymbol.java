@@ -20,25 +20,13 @@ public class FunctionSymbol extends JavaScriptSymbol {
 	
 	private final String params;
 	
-	private final DeclarationType declarationType;
-	
-	public FunctionSymbol(@Nullable Symbol parent, @Nullable SyntaxToken token, String params, DeclarationType declarationType) {
-		super(parent, token);
+	public FunctionSymbol(@Nullable Symbol parent, @Nullable SyntaxToken token, String params, boolean exported) {
+		super(parent, token, exported);
 		this.params = params;
-		this.declarationType = declarationType;
 	}
 
 	public String getParams() {
 		return params;
-	}
-
-	public DeclarationType getDeclarationType() {
-		return declarationType;
-	}
-
-	@Override
-	public boolean isPrimary() {
-		return true;
 	}
 
 	@Override
@@ -49,12 +37,9 @@ public class FunctionSymbol extends JavaScriptSymbol {
 	@Override
 	public Image renderIcon(String componentId) {
 		Image icon;
-		if (declarationType == DeclarationType.EXPORT) { 
+		if (isExported()) { 
 			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "exported_function.png"));
 			icon.add(AttributeAppender.append("title", "exported function"));
-		} else if (declarationType == DeclarationType.IMPORT) {
-			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "imported_function.png"));
-			icon.add(AttributeAppender.append("title", "imported function"));
 		} else {
 			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "function.png"));
 			icon.add(AttributeAppender.append("title", "function"));

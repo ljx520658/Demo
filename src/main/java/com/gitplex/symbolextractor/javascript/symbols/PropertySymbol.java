@@ -19,12 +19,7 @@ public class PropertySymbol extends JavaScriptSymbol {
 	private static final long serialVersionUID = 1L;
 	
 	public PropertySymbol(@Nullable Symbol parent, SyntaxToken token) {
-		super(parent, token);
-	}
-
-	@Override
-	public boolean isPrimary() {
-		return false;
+		super(parent, token, false);
 	}
 
 	@Override

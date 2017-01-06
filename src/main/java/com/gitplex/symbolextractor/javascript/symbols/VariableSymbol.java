@@ -18,20 +18,8 @@ public class VariableSymbol extends JavaScriptSymbol {
 
 	private static final long serialVersionUID = 1L;
 	
-	private final DeclarationType declarationType;
-	
-	public VariableSymbol(@Nullable Symbol parent, SyntaxToken token, DeclarationType declarationType) {
-		super(parent, token);
-		this.declarationType = declarationType;
-	}
-
-	@Override
-	public boolean isPrimary() {
-		return true;
-	}
-
-	public DeclarationType getDeclarationType() {
-		return declarationType;
+	public VariableSymbol(@Nullable Symbol parent, SyntaxToken token, boolean exported) {
+		super(parent, token, exported);
 	}
 
 	@Override
@@ -42,12 +30,9 @@ public class VariableSymbol extends JavaScriptSymbol {
 	@Override
 	public Image renderIcon(String componentId) {
 		Image icon;
-		if (declarationType == DeclarationType.EXPORT) { 
+		if (isExported()) { 
 			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "exported_variable.png"));
 			icon.add(AttributeAppender.append("title", "exported variable"));
-		} else if (declarationType == DeclarationType.IMPORT) {
-			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "imported_variable.png"));
-			icon.add(AttributeAppender.append("title", "imported variable"));
 		} else {
 			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "variable.png"));
 			icon.add(AttributeAppender.append("title", "variable"));

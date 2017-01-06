@@ -16,7 +16,7 @@ import com.gitplex.symbolextractor.java.symbols.TypeDef.Kind;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 
-public class JavaExtractorTest extends DescribableExtractorTest {
+public class JavaExtractorTest extends DescribableExtractorTest<Symbol> {
 
 	@Test
 	public void testComposite() {

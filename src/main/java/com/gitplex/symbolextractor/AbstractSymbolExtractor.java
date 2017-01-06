@@ -4,7 +4,7 @@ import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
 
-public abstract class AbstractSymbolExtractor implements SymbolExtractor {
+public abstract class AbstractSymbolExtractor<T extends Symbol> implements SymbolExtractor<T> {
 
 	protected boolean acceptExtensions(String fileName, String...exts) {
 		String fileExt = StringUtils.substringAfterLast(fileName, ".");

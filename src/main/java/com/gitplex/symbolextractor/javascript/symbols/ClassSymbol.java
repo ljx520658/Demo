@@ -19,15 +19,8 @@ public class ClassSymbol extends JavaScriptSymbol {
 
 	private static final long serialVersionUID = 1L;
 	
-	private final DeclarationType declarationType;
-	
-	public ClassSymbol(@Nullable Symbol parent, @Nullable SyntaxToken token, DeclarationType declarationType) {
-		super(parent, token);
-		this.declarationType = declarationType;
-	}
-
-	public DeclarationType getDeclarationType() {
-		return declarationType;
+	public ClassSymbol(@Nullable Symbol parent, @Nullable SyntaxToken token, boolean exported) {
+		super(parent, token, exported);
 	}
 
 	@Override
@@ -46,12 +39,9 @@ public class ClassSymbol extends JavaScriptSymbol {
 	@Override
 	public Image renderIcon(String componentId) {
 		Image icon;
-		if (declarationType == DeclarationType.EXPORT) { 
+		if (isExported()) { 
 			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "exported_class.png"));
 			icon.add(AttributeAppender.append("title", "exported class"));
-		} else if (declarationType == DeclarationType.IMPORT) {
-			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "imported_class.png"));
-			icon.add(AttributeAppender.append("title", "imported class"));
 		} else {
 			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "class.png"));
 			icon.add(AttributeAppender.append("title", "class"));

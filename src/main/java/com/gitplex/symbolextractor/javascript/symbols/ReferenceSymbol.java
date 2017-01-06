@@ -12,11 +12,11 @@ import org.sonar.plugins.javascript.api.tree.lexical.SyntaxToken;
 import com.gitplex.symbolextractor.Range;
 import com.gitplex.symbolextractor.Symbol;
 import com.gitplex.symbolextractor.TokenPosition;
-import com.gitplex.symbolextractor.javascript.symbols.ui.AssignedSymbolPanel;
+import com.gitplex.symbolextractor.javascript.symbols.ui.ReferenceSymbolPanel;
 import com.gitplex.symbolextractor.javascript.symbols.ui.icon.IconLocator;
 import com.gitplex.symbolextractor.util.NoAntiCacheImage;
 
-public class AssignedSymbol extends JavaScriptSymbol {
+public class ReferenceSymbol extends JavaScriptSymbol {
 
 	private static final long serialVersionUID = 1L;
 
@@ -24,15 +24,15 @@ public class AssignedSymbol extends JavaScriptSymbol {
 	
 	private final String object;
 	
-	public AssignedSymbol(@Nullable Symbol parent, @Nullable String indexName, 
-			TokenPosition position, String displayName, @Nullable String object) {
-		super(parent, indexName, position);
+	public ReferenceSymbol(@Nullable Symbol parent, @Nullable String indexName, 
+			TokenPosition position, String displayName, @Nullable String object, boolean exported) {
+		super(parent, indexName, position, exported);
 		this.displayName = displayName;
 		this.object = object;
 	}
 
-	public AssignedSymbol(@Nullable Symbol parent, SyntaxToken token, @Nullable String object) {
-		super(parent, token);
+	public ReferenceSymbol(@Nullable Symbol parent, SyntaxToken token, @Nullable String object, boolean exported) {
+		super(parent, token, exported);
 		this.displayName = removeQuotes(token.text());
 		this.object = object;
 	}
@@ -47,13 +47,8 @@ public class AssignedSymbol extends JavaScriptSymbol {
 	}
 
 	@Override
-	public boolean isPrimary() {
-		return false;
-	}
-	
-	@Override
 	public Component render(String componentId, Range highlight) {
-		return new AssignedSymbolPanel(componentId, this, highlight);
+		return new ReferenceSymbolPanel(componentId, this, highlight);
 	}
 
 	public String getRootObject() {
@@ -66,14 +61,26 @@ public class AssignedSymbol extends JavaScriptSymbol {
 
 	@Override
 	public Image renderIcon(String componentId) {
-		Image icon;
-		if (object != null) {
-			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "property.png"));
-			icon.add(AttributeAppender.append("title", "property"));
+		String iconFile, tooltip;
+		if (isExported()) {
+			if (object != null) {
+				iconFile = "exported_property.png";
+				tooltip = "exported property";
+			} else {
+				iconFile = "exported_object.png";
+				tooltip = "object";
+			}
 		} else {
-			icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, "object.png"));
-			icon.add(AttributeAppender.append("title", "object"));
+			if (object != null) {
+				iconFile = "property.png";
+				tooltip = "property";
+			} else {
+				iconFile = "object.png";
+				tooltip = "object";
+			}
 		}
+		Image icon = new NoAntiCacheImage(componentId, new PackageResourceReference(IconLocator.class, iconFile));
+		icon.add(AttributeAppender.append("title", tooltip));
 		return icon;
 	}
 

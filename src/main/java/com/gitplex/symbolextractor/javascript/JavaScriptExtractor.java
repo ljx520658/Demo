@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nullable;
-import javax.lang.model.type.DeclaredType;
 
 import org.apache.commons.io.Charsets;
 import org.apache.commons.lang.StringUtils;
@@ -50,29 +49,27 @@ import org.sonar.plugins.javascript.api.tree.statement.VariableStatementTree;
 
 import com.gitplex.symbolextractor.AbstractSymbolExtractor;
 import com.gitplex.symbolextractor.ExtractException;
-import com.gitplex.symbolextractor.Symbol;
-import com.gitplex.symbolextractor.javascript.symbols.AssignedSymbol;
 import com.gitplex.symbolextractor.javascript.symbols.ClassSymbol;
-import com.gitplex.symbolextractor.javascript.symbols.DeclarationType;
 import com.gitplex.symbolextractor.javascript.symbols.FunctionSymbol;
 import com.gitplex.symbolextractor.javascript.symbols.JavaScriptSymbol;
 import com.gitplex.symbolextractor.javascript.symbols.MethodAccessorType;
 import com.gitplex.symbolextractor.javascript.symbols.MethodSymbol;
 import com.gitplex.symbolextractor.javascript.symbols.PropertySymbol;
+import com.gitplex.symbolextractor.javascript.symbols.ReferenceSymbol;
 import com.gitplex.symbolextractor.javascript.symbols.VariableSymbol;
 import com.google.common.collect.Lists;
 
-public class JavaScriptExtractor extends AbstractSymbolExtractor {
+public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbol> {
 
 	@Override
-	public List<Symbol> extract(String source) throws ExtractException {
-		List<Symbol> symbols = new ArrayList<>();
+	public List<JavaScriptSymbol> extract(String source) throws ExtractException {
+		List<JavaScriptSymbol> symbols = new ArrayList<>();
 		JavaScriptParser parser = new JavaScriptParser(Charsets.UTF_8);
 		collect(parser.parse(source), null, symbols);
-		Map<Symbol, Set<String>> containedDeclarations = new HashMap<>();
-		for (Symbol symbol: symbols) {
-			if (!(symbol instanceof AssignedSymbol) && symbol.getIndexName() != null) {
-				Symbol parent = symbol.getParent();
+		Map<JavaScriptSymbol, Set<String>> containedDeclarations = new HashMap<>();
+		for (JavaScriptSymbol symbol: symbols) {
+			if (!(symbol instanceof ReferenceSymbol) && symbol.getIndexName() != null) {
+				JavaScriptSymbol parent = (JavaScriptSymbol) symbol.getParent();
 				if (parent != null) {
 					Set<String> containedDeclarationsOfParent = containedDeclarations.get(parent);
 					if (containedDeclarationsOfParent == null) {
@@ -84,71 +81,71 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor {
 			}
 		}
 
-		for (Iterator<Symbol> it = symbols.iterator(); it.hasNext();) {
-			Symbol symbol = it.next();
-			if (symbol.getParent() != null 
-					&& !(symbol instanceof AssignedSymbol) 
+		for (Iterator<JavaScriptSymbol> it = symbols.iterator(); it.hasNext();) {
+			JavaScriptSymbol symbol = it.next();
+			if (!symbol.isExported() && symbol.getParent() != null 
+					&& !(symbol instanceof ReferenceSymbol) 
 					&& !(symbol instanceof MethodSymbol) 
 					&& !(symbol instanceof PropertySymbol)) {
 				it.remove();
 			}
 		}
 		
-		for (Iterator<Symbol> it = symbols.iterator(); it.hasNext();) {
-			Symbol symbol = it.next();
-			if (symbol instanceof AssignedSymbol) {
-				AssignedSymbol assignedSymbol = (AssignedSymbol) symbol;
-				String rootObject = assignedSymbol.getRootObject();
-				Symbol parent = symbol.getParent();
+		for (Iterator<JavaScriptSymbol> it = symbols.iterator(); it.hasNext();) {
+			JavaScriptSymbol symbol = it.next();
+			if (!symbol.isExported() && symbol instanceof ReferenceSymbol) {
+				ReferenceSymbol referenceSymbol = (ReferenceSymbol) symbol;
+				String rootObject = referenceSymbol.getRootObject();
+				JavaScriptSymbol parent = (JavaScriptSymbol) symbol.getParent();
 				while (parent != null) {
 					Set<String> containedDeclarationsOfParent = containedDeclarations.get(parent);
 					if (containedDeclarationsOfParent != null && containedDeclarationsOfParent.contains(rootObject)) {
 						it.remove();
 						break;
 					}
-					parent = parent.getParent();
+					parent = (JavaScriptSymbol) parent.getParent();
 				}
 			}
 		}
 
-		Set<Symbol> hasChildren = new HashSet<>();
-		for (Symbol symbol: symbols) {
-			Symbol parent = symbol.getParent();
+		Set<JavaScriptSymbol> hasChildren = new HashSet<>();
+		for (JavaScriptSymbol symbol: symbols) {
+			JavaScriptSymbol parent = (JavaScriptSymbol) symbol.getParent();
 			if (parent != null)
 				hasChildren.add(parent);
 		}
-		for (Iterator<Symbol> it = symbols.iterator(); it.hasNext();) {
-			Symbol symbol = it.next();
-			if (symbol instanceof AssignedSymbol && symbol.getIndexName() == null && !hasChildren.contains(symbol))
+		for (Iterator<JavaScriptSymbol> it = symbols.iterator(); it.hasNext();) {
+			JavaScriptSymbol symbol = it.next();
+			if (symbol instanceof ReferenceSymbol && symbol.getIndexName() == null && !hasChildren.contains(symbol))
 				it.remove();
 		}
 		
-		List<Symbol> addSymbols = new ArrayList<>();
-		Set<Symbol> symbolSet = new HashSet<>(symbols);
-		for (Symbol symbol: symbols) {
-			if (symbol instanceof AssignedSymbol) {
-				Symbol parent = symbol.getParent();
+		List<JavaScriptSymbol> addSymbols = new ArrayList<>();
+		Set<JavaScriptSymbol> symbolSet = new HashSet<>(symbols);
+		for (JavaScriptSymbol symbol: symbols) {
+			if (symbol instanceof ReferenceSymbol) {
+				JavaScriptSymbol parent = (JavaScriptSymbol) symbol.getParent();
 				while (parent != null) {
 					if (!symbolSet.contains(parent)) {
 						symbolSet.add(parent);
 						addSymbols.add(parent);
 					}
-					parent = parent.getParent();
+					parent = (JavaScriptSymbol) parent.getParent();
 				}
 			}
 		}
 		symbols.addAll(addSymbols);
 		
-		List<Symbol> removeSymbols = new ArrayList<>();
-		for (Symbol symbol: symbols) {
-			if (!(symbol instanceof AssignedSymbol)) {
-				Symbol parent = symbol.getParent();
+		List<JavaScriptSymbol> removeSymbols = new ArrayList<>();
+		for (JavaScriptSymbol symbol: symbols) {
+			if (!(symbol instanceof ReferenceSymbol)) {
+				JavaScriptSymbol parent = (JavaScriptSymbol) symbol.getParent();
 				while (parent != null) {
 					if (!symbolSet.contains(parent)) {
 						removeSymbols.add(symbol);
 						break;
 					}
-					parent = parent.getParent();
+					parent = (JavaScriptSymbol) parent.getParent();
 				}
 			}
 		}
@@ -157,7 +154,7 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor {
 		return symbols;
 	}
 	
-	private void collect(Tree tree, Symbol parent, List<Symbol> symbols) {
+	private void collect(Tree tree, JavaScriptSymbol parent, List<JavaScriptSymbol> symbols) {
 		if (tree instanceof ScriptTree) {
 			ScriptTree script = (ScriptTree) tree;
 			if (script.items() != null && script.items().items() != null) {
@@ -172,7 +169,7 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor {
 		} 
 	}
 	
-	private void collect(Iterable<MethodDeclarationTree> methodDeclarations, Symbol parent, List<Symbol> symbols) {
+	private void collect(Iterable<MethodDeclarationTree> methodDeclarations, JavaScriptSymbol parent, List<JavaScriptSymbol> symbols) {
 		for (MethodDeclarationTree methodDeclaration: methodDeclarations) {
 			Tree name = methodDeclaration.name();
 			SyntaxToken nameToken = getNameToken(name);
@@ -210,109 +207,109 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor {
 		return builder.toString();
 	}
 	
-	private void collect(NamedExportDeclarationTree namedExportDeclaration, Symbol parent, List<Symbol> symbols) {
+	private void collect(NamedExportDeclarationTree namedExportDeclaration, JavaScriptSymbol parent, List<JavaScriptSymbol> symbols) {
 		Tree object = namedExportDeclaration.object();
 		if (object instanceof ExportDefaultBinding) {
 			ExportDefaultBinding exportDefaultBinding = (ExportDefaultBinding) object;
 			IdentifierTree identifier = exportDefaultBinding.exportedDefaultIdentifier();
 			if (!identifier.name().equals("default")) {
-				symbols.add(new VariableSymbol(parent, identifier.identifierToken(), DeclarationType.EXPORT));
+				symbols.add(new VariableSymbol(parent, identifier.identifierToken(), true));
 			}
 		} if (object instanceof FunctionDeclarationTree) {
-			collect((FunctionDeclarationTree)object, parent, symbols, DeclarationType.EXPORT);
+			collect((FunctionDeclarationTree)object, parent, symbols, true);
 		} else if (object instanceof VariableStatementTree) {
-			collect(((VariableStatementTree)object).declaration(), parent, symbols, DeclarationType.EXPORT);
+			collect(((VariableStatementTree)object).declaration(), parent, symbols, true);
 		} else if (object instanceof ExportClauseTree) {
 			ExportClauseTree exportClause = (ExportClauseTree) object;
 			for (SpecifierTree specifier: exportClause.exports().specifiers()) {
 				if (specifier.localName() != null) {
-					VariableSymbol symbol = new VariableSymbol(parent, specifier.localName().identifierToken(), DeclarationType.EXPORT);
+					VariableSymbol symbol = new VariableSymbol(parent, specifier.localName().identifierToken(), true);
 					symbols.add(symbol);
 				} else if (specifier.name() instanceof IdentifierTree) {
-					VariableSymbol symbol = new VariableSymbol(parent, ((IdentifierTree)specifier.name()).identifierToken(), DeclarationType.EXPORT);
+					VariableSymbol symbol = new VariableSymbol(parent, ((IdentifierTree)specifier.name()).identifierToken(), true);
 					symbols.add(symbol);
 				}
 			}
 		} else if (object instanceof ClassTree) {
 			ClassTree classTree = (ClassTree)object;
-			parent = new ClassSymbol(parent, classTree.name()!=null?classTree.name().identifierToken():null, DeclarationType.EXPORT);
+			parent = new ClassSymbol(parent, classTree.name()!=null?classTree.name().identifierToken():null, true);
 			symbols.add(parent);
 			collect(classTree.methods(), parent, symbols);
 		}
 	}
 	
-	private void collect(FunctionDeclarationTree functionDeclaration, Symbol parent, 
-			List<Symbol> symbols, DeclarationType type) {
+	private void collect(FunctionDeclarationTree functionDeclaration, JavaScriptSymbol parent, 
+			List<JavaScriptSymbol> symbols, boolean exported) {
 		FunctionSymbol symbol = new FunctionSymbol(parent, functionDeclaration.name().identifierToken(), 
-				describeParameters(functionDeclaration.parameterClause()), type);
+				describeParameters(functionDeclaration.parameterClause()), exported);
 		symbols.add(symbol);
 		collect(functionDeclaration.body(), symbol, symbols);
 	}
 	
-	private void collect(BlockTree body, Symbol parent, List<Symbol> symbols) {
+	private void collect(BlockTree body, JavaScriptSymbol parent, List<JavaScriptSymbol> symbols) {
 		for (StatementTree statement: body.statements()) {
 			collect(statement, parent, symbols);
 		}
 	}
 	
-	private void collect(StatementTree statement, Symbol parent, List<Symbol> symbols) {
+	private void collect(StatementTree statement, JavaScriptSymbol parent, List<JavaScriptSymbol> symbols) {
 		if (statement instanceof FunctionDeclarationTree) {
-			collect((FunctionDeclarationTree)statement, parent, symbols, DeclarationType.NORMAL);
+			collect((FunctionDeclarationTree)statement, parent, symbols, false);
 		} else if (statement instanceof VariableStatementTree) {
-			collect(((VariableStatementTree)statement).declaration(), parent, symbols, DeclarationType.NORMAL);
+			collect(((VariableStatementTree)statement).declaration(), parent, symbols, false);
 		} else if (statement instanceof ExpressionStatementTree) {
 			Tree expression = ((ExpressionStatementTree)statement).expression();
 			if (expression instanceof ExpressionTree) {
-				collect((ExpressionTree) expression, parent, symbols, new ArrayList<>(), DeclarationType.NORMAL);
+				collect((ExpressionTree) expression, parent, symbols, new ArrayList<>(), false);
 			}
 		} else if (statement instanceof BlockTree) {
 			collect((BlockTree)statement, parent, symbols);
 		} else if (statement instanceof ClassTree) {
 			ClassTree classTree = (ClassTree) statement;
-			parent = new ClassSymbol(parent, classTree.name()!=null?classTree.name().identifierToken():null, DeclarationType.NORMAL);
+			parent = new ClassSymbol(parent, classTree.name()!=null?classTree.name().identifierToken():null, false);
 			symbols.add(parent);
 			collect(classTree.methods(), parent, symbols);
 		} else if (statement instanceof ReturnStatementTree) {
 			ReturnStatementTree returnStatement = (ReturnStatementTree) statement;
 			SyntaxToken token = returnStatement.returnKeyword();
-			AssignedSymbol assignedSymbol = new AssignedSymbol(parent, null, 
-					JavaScriptSymbol.getPosition(token), "return", null);
-			symbols.add(assignedSymbol);
+			ReferenceSymbol referenceSymbol = new ReferenceSymbol(parent, null, 
+					JavaScriptSymbol.getPosition(token), "return", null, false);
+			symbols.add(referenceSymbol);
 			collect(returnStatement.expression(), parent, symbols, 
-					Lists.newArrayList(assignedSymbol), DeclarationType.NORMAL);
+					Lists.newArrayList(referenceSymbol), false);
 		}
 	}
 	
-	private void collect(VariableDeclarationTree variableDeclaration, Symbol parent, 
-			List<Symbol> symbols, DeclarationType type) {
+	private void collect(VariableDeclarationTree variableDeclaration, JavaScriptSymbol parent, 
+			List<JavaScriptSymbol> symbols, boolean exported) {
 		for (BindingElementTree bindingElement: variableDeclaration.variables()) {
-			collect(bindingElement, parent, symbols, type);
+			collect(bindingElement, parent, symbols, exported);
 		}
 	}
 	
-	private void collect(BindingElementTree bindingElement, Symbol parent, List<Symbol> symbols, DeclarationType type) {
-		List<Symbol> assignedSymbols = new ArrayList<>();
+	private void collect(BindingElementTree bindingElement, JavaScriptSymbol parent, List<JavaScriptSymbol> symbols, boolean exported) {
+		List<JavaScriptSymbol> assignedSymbols = new ArrayList<>();
 		for (IdentifierTree identifier: bindingElement.bindingIdentifiers()) {
-			VariableSymbol symbol = new VariableSymbol(parent, identifier.identifierToken(), type);
+			VariableSymbol symbol = new VariableSymbol(parent, identifier.identifierToken(), exported);
 			assignedSymbols.add(symbol);
 		}
 		symbols.addAll(assignedSymbols);
 		
 		if (bindingElement instanceof InitializedBindingElementTree) {
 			InitializedBindingElementTree initializedBindingElement = (InitializedBindingElementTree) bindingElement;
-			collect((ExpressionTree)initializedBindingElement.right(), parent, symbols, assignedSymbols, type);
+			collect((ExpressionTree)initializedBindingElement.right(), parent, symbols, assignedSymbols, exported);
 		}
 	}
 	
-	private void collect(ExpressionTree expression, Symbol parent, List<Symbol> symbols, 
-			List<Symbol> assignedSymbols, DeclarationType type) {
+	private void collect(ExpressionTree expression, JavaScriptSymbol parent, List<JavaScriptSymbol> symbols, 
+			List<JavaScriptSymbol> assignedSymbols, boolean exported) {
 		if (expression instanceof AssignmentExpressionTree) {
-			collect((AssignmentExpressionTree)expression, parent, symbols, assignedSymbols, type);
+			collect((AssignmentExpressionTree)expression, parent, symbols, assignedSymbols, exported);
 		} else if (expression instanceof ObjectLiteralTree) {
 			collect((ObjectLiteralTree)expression, parent, symbols, assignedSymbols);
 		} else if (expression instanceof ParenthesisedExpressionTree) {
 			ParenthesisedExpressionTree parenthesisedExpression = (ParenthesisedExpressionTree) expression;
-			collect(parenthesisedExpression.expression(), parent, symbols, assignedSymbols, type);
+			collect(parenthesisedExpression.expression(), parent, symbols, assignedSymbols, exported);
 		} else if (expression instanceof CallExpressionTree) {
 			CallExpressionTree callExpression = (CallExpressionTree) expression;
 			if (callExpression.callee() instanceof IdentifierTree) {
@@ -321,15 +318,15 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor {
 					symbols.removeAll(assignedSymbols);
 				}
 			}
-			collect(callExpression.callee(), parent, symbols, Lists.newArrayList(), DeclarationType.NORMAL);
+			collect(callExpression.callee(), parent, symbols, Lists.newArrayList(), false);
 			for (Tree parameter: callExpression.arguments().parameters()) {
 				if (parameter instanceof ExpressionTree) {
-					collect((ExpressionTree)parameter, parent, symbols, Lists.newArrayList(), DeclarationType.NORMAL);
+					collect((ExpressionTree)parameter, parent, symbols, Lists.newArrayList(), false);
 				}
 			}
 		} else if (expression instanceof FunctionTree) {
 			if (!assignedSymbols.isEmpty()) {
-				for (Symbol assigned: assignedSymbols) {
+				for (JavaScriptSymbol assigned: assignedSymbols) {
 					collect(((FunctionTree)expression).body(), assigned, symbols);
 				}
 			} else {
@@ -338,14 +335,12 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor {
 					IdentifierTree identifier = functionExpression.name();
 					SyntaxToken nameToken = identifier!=null?identifier.identifierToken():null;
 					parent = new FunctionSymbol(parent, nameToken, 
-							describeParameters(functionExpression.parameterClause()), 
-							DeclarationType.NORMAL);
+							describeParameters(functionExpression.parameterClause()), false);
 					symbols.add(parent);
 				} else if (expression instanceof ArrowFunctionTree) {
 					ArrowFunctionTree arrowFunction = (ArrowFunctionTree) expression;
 					parent = new FunctionSymbol(parent, null, 
-							describeParameters(arrowFunction.parameterClause()), 
-							DeclarationType.NORMAL);
+							describeParameters(arrowFunction.parameterClause()), false);
 					symbols.add(parent);
 				}
 				collect(((FunctionTree)expression).body(), parent, symbols);
@@ -353,20 +348,39 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor {
 		} else if (expression instanceof ClassTree) {
 			ClassTree classTree = (ClassTree) expression;
 			if (!assignedSymbols.isEmpty()) {
-				for (Symbol assigned: assignedSymbols) {
+				for (JavaScriptSymbol assigned: assignedSymbols) {
 					collect(classTree.methods(), assigned, symbols);
 				}
 			} else {
-				parent = new ClassSymbol(parent, classTree.name()!=null?classTree.name().identifierToken():null, DeclarationType.NORMAL);
+				parent = new ClassSymbol(parent, classTree.name()!=null?classTree.name().identifierToken():null, false);
 				symbols.add(parent);
 				collect(classTree.methods(), parent, symbols);
 			}
-		} else if (expression instanceof IdentifierTree) {
-			for (Symbol symbol: assignedSymbols) {
-				if (symbol instanceof AssignedSymbol) {
-					AssignedSymbol assignedSymbol = (AssignedSymbol) symbol;
-					if (assignedSymbol.getObject())
+		} else if (expression instanceof IdentifierTree || expression instanceof DotMemberExpressionTree) {
+			boolean exports = false;
+			for (JavaScriptSymbol assignedSymbol: assignedSymbols) {
+				if (assignedSymbol instanceof ReferenceSymbol) {
+					ReferenceSymbol referenceSymbol = (ReferenceSymbol) assignedSymbol;
+					if (referenceSymbol.getIndexName() != null) {
+						if (referenceSymbol.getObject()!=null && (referenceSymbol.getObject() + "." + referenceSymbol.getIndexName()).equals("module.exports")
+								|| referenceSymbol.getObject()==null && referenceSymbol.getIndexName().equals("exports")) {
+							symbols.remove(referenceSymbol);
+							exports = true;
+						}
+					}
 				}
+			}
+			if (exports) {
+				ReferenceSymbol referenceSymbol;
+				if (expression instanceof IdentifierTree) {
+					IdentifierTree identifier = (IdentifierTree) expression;
+					referenceSymbol = new ReferenceSymbol(parent, identifier.identifierToken(), null, true);
+				} else {
+					DotMemberExpressionTree dotMemberExpression = (DotMemberExpressionTree) expression;
+					referenceSymbol = new ReferenceSymbol(parent, dotMemberExpression.property().identifierToken(), 
+							StringUtils.deleteWhitespace(dotMemberExpression.object().toString()), true);
+				}
+				symbols.add(referenceSymbol);
 			}
 		}
 	}
@@ -385,9 +399,9 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor {
 		return null;
 	}
 	
-	private void collect(ObjectLiteralTree objectLiteral, Symbol parent, List<Symbol> symbols, 
-			List<Symbol> assignedSymbols) {
-		for (Symbol assigned: assignedSymbols) {
+	private void collect(ObjectLiteralTree objectLiteral, JavaScriptSymbol parent, List<JavaScriptSymbol> symbols, 
+			List<JavaScriptSymbol> assignedSymbols) {
+		for (JavaScriptSymbol assigned: assignedSymbols) {
 			for (Tree property: objectLiteral.properties()) {
 				if (property instanceof PairPropertyTree) {
 					PairPropertyTree pairProperty = (PairPropertyTree) property;
@@ -395,7 +409,7 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor {
 					if (nameToken != null) {
 						PropertySymbol propertySymbol = new PropertySymbol(assigned, nameToken);
 						symbols.add(propertySymbol);
-						collect(pairProperty.value(), parent, symbols, Lists.newArrayList(propertySymbol), DeclarationType.NORMAL);
+						collect(pairProperty.value(), parent, symbols, Lists.newArrayList(propertySymbol), false);
 					}
 				} else if (property instanceof MethodDeclarationTree) {
 					MethodAccessorType accessorType = MethodAccessorType.NORMAL;
@@ -420,23 +434,23 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor {
 		}
 	}
 	
-	private void collect(AssignmentExpressionTree assignmentExpression, Symbol parent, List<Symbol> symbols, 
-			List<Symbol> assignedSymbols, DeclarationType type) {
+	private void collect(AssignmentExpressionTree assignmentExpression, JavaScriptSymbol parent, List<JavaScriptSymbol> symbols, 
+			List<JavaScriptSymbol> assignedSymbols, boolean exported) {
 		if (assignmentExpression.is(Kind.ASSIGNMENT)) {
 			ExpressionTree variable = assignmentExpression.variable();
 			if (variable instanceof IdentifierTree) {
 				IdentifierTree identifier = (IdentifierTree) assignmentExpression.variable();
-				AssignedSymbol symbol = new AssignedSymbol(parent, identifier.identifierToken(), null);
+				ReferenceSymbol symbol = new ReferenceSymbol(parent, identifier.identifierToken(), null, false);
 				symbols.add(symbol);
 				assignedSymbols.add(symbol);
-				collect(assignmentExpression.expression(), parent, symbols, assignedSymbols, type);
+				collect(assignmentExpression.expression(), parent, symbols, assignedSymbols, exported);
 			} else if (variable instanceof DotMemberExpressionTree) {
 				DotMemberExpressionTree dotMemberExpression = (DotMemberExpressionTree) variable;
-				AssignedSymbol symbol = new AssignedSymbol(parent, dotMemberExpression.property().identifierToken(), 
-						StringUtils.deleteWhitespace(dotMemberExpression.object().toString()));
+				ReferenceSymbol symbol = new ReferenceSymbol(parent, dotMemberExpression.property().identifierToken(), 
+						StringUtils.deleteWhitespace(dotMemberExpression.object().toString()), false);
 				symbols.add(symbol);
 				assignedSymbols.add(symbol);
-				collect(assignmentExpression.expression(), parent, symbols, assignedSymbols, type);
+				collect(assignmentExpression.expression(), parent, symbols, assignedSymbols, exported);
 			}
 		}
 	}

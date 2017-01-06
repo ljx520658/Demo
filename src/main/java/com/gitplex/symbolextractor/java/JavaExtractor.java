@@ -59,7 +59,7 @@ import com.gitplex.symbolextractor.util.TokenStream;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
 
-public class JavaExtractor extends AbstractSymbolExtractor {
+public class JavaExtractor extends AbstractSymbolExtractor<Symbol> {
 	
 	private static final int[] PRIMITIVES = new int[]{
 		FLOAT, INT, LONG, BOOLEAN, CHAR, BYTE, SHORT, DOUBLE, VOID};
