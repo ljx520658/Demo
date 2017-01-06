@@ -18,8 +18,9 @@ import org.apache.wicket.ajax.form.OnChangeAjaxBehavior;
 import org.apache.wicket.extensions.markup.html.repeater.tree.ITreeProvider;
 import org.apache.wicket.extensions.markup.html.repeater.tree.NestedTree;
 import org.apache.wicket.extensions.markup.html.repeater.tree.theme.HumanTheme;
+import org.apache.wicket.markup.ComponentTag;
 import org.apache.wicket.markup.html.WebPage;
-import org.apache.wicket.markup.html.basic.MultiLineLabel;
+import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.form.DropDownChoice;
 import org.apache.wicket.markup.html.form.TextArea;
 import org.apache.wicket.markup.html.panel.Fragment;
@@ -110,7 +111,15 @@ public class HomePage extends WebPage {
 	
 	private Component newOutline() {
 		if (error != null) {
-			return new MultiLineLabel("outline", error).setOutputMarkupId(true);
+			return new Label("outline", error) {
+
+				@Override
+				protected void onComponentTag(ComponentTag tag) {
+					super.onComponentTag(tag);
+					tag.setName("pre");
+				}
+				
+			}.setOutputMarkupId(true);
 		} else {
 			NestedTree<Symbol> outline = new NestedTree<Symbol>("outline", new ITreeProvider<Symbol>() {
 

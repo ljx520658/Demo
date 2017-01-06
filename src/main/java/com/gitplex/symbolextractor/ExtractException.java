@@ -7,4 +7,8 @@ public class ExtractException extends RuntimeException {
 		super(message);
 	}
 	
+	public ExtractException(String message, Throwable cause) {
+		super(message, cause);
+	}
+	
 }
