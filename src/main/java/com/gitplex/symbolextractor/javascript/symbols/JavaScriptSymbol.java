@@ -12,7 +12,7 @@ public abstract class JavaScriptSymbol extends Symbol {
 
 	private static final long serialVersionUID = 1L;
 	
-	private final boolean exported;
+	private boolean exported;
 	
 	public JavaScriptSymbol(@Nullable Symbol parent, @Nullable String indexName, TokenPosition position, boolean exported) {
 		super(parent, indexName, position);
@@ -34,6 +34,10 @@ public abstract class JavaScriptSymbol extends Symbol {
 	
 	public boolean isExported() {
 		return exported;
+	}
+
+	public void setExported(boolean exported) {
+		this.exported = exported;
 	}
 
 	@Override

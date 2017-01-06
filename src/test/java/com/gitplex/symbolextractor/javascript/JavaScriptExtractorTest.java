@@ -23,11 +23,12 @@ public class JavaScriptExtractorTest extends DescribableExtractorTest<JavaScript
 	public void test() {
 		SymbolExtractor<JavaScriptSymbol> extractor = new JavaScriptExtractor();
 		verify(readFile("object-literal.symbols"), extractor.extract(readFile("object-literal.source")));
-		verify(readFile("jquery.symbols"), extractor.extract(readFile("jquery.source")));
-		verify(readFile("commonjs.symbols"), extractor.extract(readFile("commonjs.source")));
 		verify(readFile("variables.symbols"), extractor.extract(readFile("variables.source")));
 		verify(readFile("module.symbols"), extractor.extract(readFile("module.source")));
 		verify(readFile("class.symbols"), extractor.extract(readFile("class.source")));
+		verify(readFile("jquery.symbols"), extractor.extract(readFile("jquery.source")));
+		verify(readFile("commonjs.symbols"), extractor.extract(readFile("commonjs.source")));
+		verify(readFile("vue.symbols"), extractor.extract(readFile("vue.source")));
 	}
 
 	@Override

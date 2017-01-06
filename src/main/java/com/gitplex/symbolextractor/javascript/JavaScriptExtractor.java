@@ -36,6 +36,7 @@ import org.sonar.plugins.javascript.api.tree.expression.ExpressionTree;
 import org.sonar.plugins.javascript.api.tree.expression.FunctionExpressionTree;
 import org.sonar.plugins.javascript.api.tree.expression.IdentifierTree;
 import org.sonar.plugins.javascript.api.tree.expression.LiteralTree;
+import org.sonar.plugins.javascript.api.tree.expression.NewExpressionTree;
 import org.sonar.plugins.javascript.api.tree.expression.ObjectLiteralTree;
 import org.sonar.plugins.javascript.api.tree.expression.PairPropertyTree;
 import org.sonar.plugins.javascript.api.tree.expression.ParenthesisedExpressionTree;
@@ -306,22 +307,68 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 		if (expression instanceof AssignmentExpressionTree) {
 			collect((AssignmentExpressionTree)expression, parent, symbols, assignedSymbols, exported);
 		} else if (expression instanceof ObjectLiteralTree) {
-			collect((ObjectLiteralTree)expression, parent, symbols, assignedSymbols);
+			collect((ObjectLiteralTree)expression, symbols, parent, assignedSymbols);
 		} else if (expression instanceof ParenthesisedExpressionTree) {
 			ParenthesisedExpressionTree parenthesisedExpression = (ParenthesisedExpressionTree) expression;
 			collect(parenthesisedExpression.expression(), parent, symbols, assignedSymbols, exported);
+		} else if (expression instanceof NewExpressionTree) {
+			NewExpressionTree newExpression = (NewExpressionTree) expression;
+			collect(newExpression.expression(), parent, symbols, Lists.newArrayList(), false);
+			for (Tree parameter: newExpression.arguments().parameters()) {
+				if (parameter instanceof ExpressionTree) {
+					collect((ExpressionTree)parameter, parent, symbols, Lists.newArrayList(), false);
+				} 
+			}
 		} else if (expression instanceof CallExpressionTree) {
 			CallExpressionTree callExpression = (CallExpressionTree) expression;
-			if (callExpression.callee() instanceof IdentifierTree) {
+			boolean processed = false;
+			
+			// CommonJS require statement
+			if (!processed && callExpression.callee() instanceof IdentifierTree) {  
 				IdentifierTree callingFunction = (IdentifierTree) callExpression.callee();
 				if (callingFunction.name().equals("require")) {
 					symbols.removeAll(assignedSymbols);
+					processed = true;
+				} 
+			} 
+			
+			// Vue.js component registration
+			if (!processed 
+					&& callExpression.callee() instanceof DotMemberExpressionTree 
+					&& StringUtils.deleteWhitespace(callExpression.callee().toString()).equals("Vue.component") 
+					&& callExpression.arguments().parameters().size()>=2
+					&& callExpression.arguments().parameters().get(0) instanceof LiteralTree
+					&& ((LiteralTree) callExpression.arguments().parameters().get(0)).is(Kind.STRING_LITERAL)) {
+				LiteralTree vueComponent = (LiteralTree) callExpression.arguments().parameters().get(0);
+				ReferenceSymbol componentSymbol = new ReferenceSymbol(parent, vueComponent.token(), null, true);
+				symbols.add(componentSymbol);
+				assignedSymbols.add(componentSymbol);
+				
+				if (callExpression.arguments().parameters().get(1) instanceof ExpressionTree) {
+					collect((ExpressionTree)callExpression.arguments().parameters().get(1), 
+							parent, symbols, assignedSymbols, false);
 				}
-			}
-			collect(callExpression.callee(), parent, symbols, Lists.newArrayList(), false);
-			for (Tree parameter: callExpression.arguments().parameters()) {
-				if (parameter instanceof ExpressionTree) {
-					collect((ExpressionTree)parameter, parent, symbols, Lists.newArrayList(), false);
+				processed = true;
+			} 
+			if (!processed 
+					&& callExpression.callee() instanceof DotMemberExpressionTree 
+					&& StringUtils.deleteWhitespace(callExpression.callee().toString()).equals("Vue.extend") 
+					&& !callExpression.arguments().parameters().isEmpty()) {
+				for (JavaScriptSymbol assignedSymbol: assignedSymbols)
+					assignedSymbol.setExported(true);
+				if (callExpression.arguments().parameters().get(0) instanceof ExpressionTree) {
+					collect((ExpressionTree)callExpression.arguments().parameters().get(0), 
+							parent, symbols, assignedSymbols, false);
+				}
+				processed = true;
+			} 
+			
+			if (!processed) {
+				collect(callExpression.callee(), parent, symbols, Lists.newArrayList(), false);
+				for (Tree parameter: callExpression.arguments().parameters()) {
+					if (parameter instanceof ExpressionTree) {
+						collect((ExpressionTree)parameter, parent, symbols, Lists.newArrayList(), false);
+					} 
 				}
 			}
 		} else if (expression instanceof FunctionTree) {
@@ -399,15 +446,18 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 		return null;
 	}
 	
-	private void collect(ObjectLiteralTree objectLiteral, JavaScriptSymbol parent, List<JavaScriptSymbol> symbols, 
+	private void collect(ObjectLiteralTree objectLiteral, List<JavaScriptSymbol> symbols, JavaScriptSymbol parent, 
 			List<JavaScriptSymbol> assignedSymbols) {
-		for (JavaScriptSymbol assigned: assignedSymbols) {
+		List<JavaScriptSymbol> associatedSymbols = new ArrayList<>(assignedSymbols);
+		if (associatedSymbols.isEmpty())
+			associatedSymbols.add(parent);
+		for (JavaScriptSymbol associatedSymbol: associatedSymbols) {
 			for (Tree property: objectLiteral.properties()) {
 				if (property instanceof PairPropertyTree) {
 					PairPropertyTree pairProperty = (PairPropertyTree) property;
 					SyntaxToken nameToken = getNameToken(pairProperty.key());
 					if (nameToken != null) {
-						PropertySymbol propertySymbol = new PropertySymbol(assigned, nameToken);
+						PropertySymbol propertySymbol = new PropertySymbol(associatedSymbol, nameToken);
 						symbols.add(propertySymbol);
 						collect(pairProperty.value(), parent, symbols, Lists.newArrayList(propertySymbol), false);
 					}
@@ -424,7 +474,7 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 					Tree name = methodDeclaration.name();
 					SyntaxToken nameToken = getNameToken(name);
 					if (nameToken != null) {
-						MethodSymbol methodSymbol = new MethodSymbol(assigned, nameToken, 
+						MethodSymbol methodSymbol = new MethodSymbol(associatedSymbol, nameToken, 
 								accessorType, describeParameters(methodDeclaration.parameterClause()));
 						symbols.add(methodSymbol);
 						collect(methodDeclaration.body(), methodSymbol, symbols);

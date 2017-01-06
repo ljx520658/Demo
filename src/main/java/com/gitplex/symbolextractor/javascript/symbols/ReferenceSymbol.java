@@ -68,7 +68,7 @@ public class ReferenceSymbol extends JavaScriptSymbol {
 				tooltip = "exported property";
 			} else {
 				iconFile = "exported_object.png";
-				tooltip = "object";
+				tooltip = "exported object";
 			}
 		} else {
 			if (object != null) {
