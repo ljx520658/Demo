@@ -167,8 +167,8 @@ public class HomePage extends WebPage {
 				
 			};		
 			
-			for (Symbol root: getChildSymbols(null))
-				outline.expand(root);
+			for (Symbol symbol: symbols)
+				outline.expand(symbol);
 			
 			outline.setOutputMarkupId(true);
 			return outline;
