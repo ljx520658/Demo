@@ -457,7 +457,7 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 	
 	@Override
 	public int getVersion() {
-		return 2;
+		return 3;
 	}
 
 	@Override
