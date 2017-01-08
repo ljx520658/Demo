@@ -360,10 +360,12 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 		} else if (expression instanceof NewExpressionTree) { // new SomeClass(...)
 			NewExpressionTree newExpression = (NewExpressionTree) expression;
 			collect(newExpression.expression(), parent, symbols, Lists.newArrayList(), false);
-			for (Tree parameter: newExpression.arguments().parameters()) {
-				if (parameter instanceof ExpressionTree) {
-					collect((ExpressionTree)parameter, parent, symbols, Lists.newArrayList(), false);
-				} 
+			if (newExpression.arguments() != null) {
+				for (Tree parameter: newExpression.arguments().parameters()) {
+					if (parameter instanceof ExpressionTree) {
+						collect((ExpressionTree)parameter, parent, symbols, Lists.newArrayList(), false);
+					} 
+				}
 			}
 		} else if (expression instanceof CallExpressionTree) { // call a function
 			CallExpressionTree callExpression = (CallExpressionTree) expression;
