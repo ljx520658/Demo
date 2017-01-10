@@ -1,0 +1,7 @@
+function test() {
+  export person
+  export hello.world
+  local function inner2() {
+    exports
+  }
+}

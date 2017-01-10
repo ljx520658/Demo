@@ -1,0 +1,11 @@
+local var person
+local var people
+local var person
+export var person
+export var person
+export var test {
+  this.name
+}
+export function test() {
+  this.name
+}

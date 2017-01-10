@@ -1,0 +1,13 @@
+var Parent {
+  template
+  components {
+    my-component
+  }
+}
+export child {
+  props
+  template
+}
+components {
+  my-component
+}

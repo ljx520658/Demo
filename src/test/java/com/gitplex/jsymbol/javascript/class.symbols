@@ -1,0 +1,14 @@
+class Polygon {
+  constructor(height, width) {
+    this.name
+    this.height
+    this.width
+  }
+  test() {
+    local class Inner2 {
+      method2() {
+        module.exports
+      }
+    }
+  }
+}

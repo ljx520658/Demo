@@ -1,0 +1,5 @@
+local var foo
+var bar
+local bar
+exports.app
+exports.foo
