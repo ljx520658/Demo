@@ -1,25 +1,68 @@
 package com.gitplex.jsymbol.javascript;
 
-import com.gitplex.jsymbol.AbstractSymbolExtractor;
-import com.gitplex.jsymbol.ExtractException;
-import com.gitplex.jsymbol.Symbol;
-import com.gitplex.jsymbol.TokenPosition;
-import com.gitplex.jsymbol.javascript.symbols.*;
-import com.google.common.collect.Lists;
-import com.sonar.sslr.api.RecognitionException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.annotation.Nullable;
+
 import org.apache.commons.io.Charsets;
 import org.apache.commons.lang.StringUtils;
 import org.sonar.javascript.parser.JavaScriptParser;
 import org.sonar.plugins.javascript.api.tree.ScriptTree;
 import org.sonar.plugins.javascript.api.tree.Tree;
 import org.sonar.plugins.javascript.api.tree.Tree.Kind;
-import org.sonar.plugins.javascript.api.tree.declaration.*;
-import org.sonar.plugins.javascript.api.tree.expression.*;
+import org.sonar.plugins.javascript.api.tree.declaration.AccessorMethodDeclarationTree;
+import org.sonar.plugins.javascript.api.tree.declaration.BindingElementTree;
+import org.sonar.plugins.javascript.api.tree.declaration.ExportClauseTree;
+import org.sonar.plugins.javascript.api.tree.declaration.ExportDefaultBinding;
+import org.sonar.plugins.javascript.api.tree.declaration.FunctionDeclarationTree;
+import org.sonar.plugins.javascript.api.tree.declaration.FunctionTree;
+import org.sonar.plugins.javascript.api.tree.declaration.ImportClauseTree;
+import org.sonar.plugins.javascript.api.tree.declaration.ImportDeclarationTree;
+import org.sonar.plugins.javascript.api.tree.declaration.InitializedBindingElementTree;
+import org.sonar.plugins.javascript.api.tree.declaration.MethodDeclarationTree;
+import org.sonar.plugins.javascript.api.tree.declaration.NamedExportDeclarationTree;
+import org.sonar.plugins.javascript.api.tree.declaration.ParameterListTree;
+import org.sonar.plugins.javascript.api.tree.declaration.SpecifierListTree;
+import org.sonar.plugins.javascript.api.tree.declaration.SpecifierTree;
+import org.sonar.plugins.javascript.api.tree.expression.ArrowFunctionTree;
+import org.sonar.plugins.javascript.api.tree.expression.AssignmentExpressionTree;
+import org.sonar.plugins.javascript.api.tree.expression.CallExpressionTree;
+import org.sonar.plugins.javascript.api.tree.expression.ClassTree;
+import org.sonar.plugins.javascript.api.tree.expression.DotMemberExpressionTree;
+import org.sonar.plugins.javascript.api.tree.expression.ExpressionTree;
+import org.sonar.plugins.javascript.api.tree.expression.FunctionExpressionTree;
+import org.sonar.plugins.javascript.api.tree.expression.IdentifierTree;
+import org.sonar.plugins.javascript.api.tree.expression.LiteralTree;
+import org.sonar.plugins.javascript.api.tree.expression.NewExpressionTree;
+import org.sonar.plugins.javascript.api.tree.expression.ObjectLiteralTree;
+import org.sonar.plugins.javascript.api.tree.expression.PairPropertyTree;
+import org.sonar.plugins.javascript.api.tree.expression.ParenthesisedExpressionTree;
 import org.sonar.plugins.javascript.api.tree.lexical.SyntaxToken;
-import org.sonar.plugins.javascript.api.tree.statement.*;
+import org.sonar.plugins.javascript.api.tree.statement.BlockTree;
+import org.sonar.plugins.javascript.api.tree.statement.ExpressionStatementTree;
+import org.sonar.plugins.javascript.api.tree.statement.StatementTree;
+import org.sonar.plugins.javascript.api.tree.statement.VariableDeclarationTree;
+import org.sonar.plugins.javascript.api.tree.statement.VariableStatementTree;
 
-import javax.annotation.Nullable;
-import java.util.*;
+import com.gitplex.jsymbol.AbstractSymbolExtractor;
+import com.gitplex.jsymbol.ExtractException;
+import com.gitplex.jsymbol.TokenPosition;
+import com.gitplex.jsymbol.javascript.symbols.ClassSymbol;
+import com.gitplex.jsymbol.javascript.symbols.FunctionSymbol;
+import com.gitplex.jsymbol.javascript.symbols.JavaScriptSymbol;
+import com.gitplex.jsymbol.javascript.symbols.MethodAccessorType;
+import com.gitplex.jsymbol.javascript.symbols.MethodSymbol;
+import com.gitplex.jsymbol.javascript.symbols.PropertySymbol;
+import com.gitplex.jsymbol.javascript.symbols.ReferenceSymbol;
+import com.gitplex.jsymbol.javascript.symbols.VariableSymbol;
+import com.google.common.collect.Lists;
+import com.sonar.sslr.api.RecognitionException;
 
 public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbol> {
 
