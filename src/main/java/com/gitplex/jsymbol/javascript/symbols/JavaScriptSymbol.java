@@ -1,5 +1,7 @@
 package com.gitplex.jsymbol.javascript.symbols;
 
+import java.util.ArrayList;
+
 import javax.annotation.Nullable;
 
 import com.gitplex.jsymbol.Symbol;
@@ -11,9 +13,9 @@ public abstract class JavaScriptSymbol extends Symbol {
 	
 	private boolean exported;
 	
-	public JavaScriptSymbol(@Nullable Symbol parent, @Nullable String name, TokenPosition position, boolean local,
-                            boolean exported) {
-		super(parent, name, position, local);
+	public JavaScriptSymbol(@Nullable Symbol parent, @Nullable String name, TokenPosition position, 
+			boolean local, boolean exported) {
+		super(parent, name, position, position, local, new ArrayList<>());
 		this.exported = exported;
 	}
 	
@@ -28,24 +30,6 @@ public abstract class JavaScriptSymbol extends Symbol {
     @Override
 	public boolean isPrimary() {
 		return isExported();
-	}
-
-	@Override
-	public String getScope() {
-		String scope;
-		if (getParent() != null) {
-			String parentScope = getParent().getScope();
-			String parentName = getParent().getName();
-			if (parentName == null)
-				parentName = "{}";
-			if (parentScope != null)
-				scope = parentScope + ">" + parentName;
-			else
-				scope = parentName;
-		} else {
-			scope = null;
-		}
-		return scope;
 	}
 
 }

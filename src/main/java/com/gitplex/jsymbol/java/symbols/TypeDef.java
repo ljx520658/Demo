@@ -8,15 +8,16 @@ import org.apache.wicket.Component;
 import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.request.resource.PackageResourceReference;
+import org.sonar.plugins.java.api.tree.Modifier;
 
 import com.gitplex.jsymbol.Range;
 import com.gitplex.jsymbol.Symbol;
 import com.gitplex.jsymbol.TokenPosition;
+import com.gitplex.jsymbol.java.symbols.ui.TypeDefPanel;
 import com.gitplex.jsymbol.java.symbols.ui.icon.IconLocator;
-import com.gitplex.jsymbol.util.HighlightableLabel;
 import com.gitplex.jsymbol.util.NoAntiCacheImage;
 
-public class TypeDef extends Symbol {
+public class TypeDef extends JavaSymbol {
 
 	private static final long serialVersionUID = 1L;
 
@@ -24,16 +25,16 @@ public class TypeDef extends Symbol {
 
 	private final Kind kind;
 	
-	private final String packageName;
+	private final String typeParams;
 	
 	private final List<Modifier> modifiers;
 
-	public TypeDef(@Nullable Symbol parent, @Nullable String packageName, 
-			String className, TokenPosition position, Kind kind, List<Modifier> modifiers) {
-		super(parent, className, position, modifiers.contains(Modifier.PRIVATE));
+	public TypeDef(@Nullable Symbol parent, String typeName, TokenPosition position, TokenPosition scope,
+			Kind kind, @Nullable String typeParams, List<Modifier> modifiers, List<String> superTypeNames) {
+		super(parent, typeName, position, scope, modifiers.contains(Modifier.PRIVATE), superTypeNames);
 
-		this.packageName = packageName;
 		this.kind = kind;
+		this.typeParams = typeParams;
 		this.modifiers = modifiers;
 	}
 	
@@ -41,28 +42,12 @@ public class TypeDef extends Symbol {
 		return kind;
 	}
 
+	public String getTypeParams() {
+		return typeParams;
+	}
+
 	public List<Modifier> getModifiers() {
 		return modifiers;
-	}
-
-	public String getPackageName() {
-		return packageName;
-	}
-
-	@Override
-	public String getScope() {
-		if (getParent() != null) {
-			String scope = getParent().getScope();
-			if (scope != null)
-				return scope + "." + getParent().getName();
-			else
-				return getParent().getName();
-		} else {
-			if (packageName != null)
-				return packageName;
-			else
-				return null;
-		}
 	}
 
 	@Override
@@ -72,7 +57,7 @@ public class TypeDef extends Symbol {
 
 	@Override
 	public Component render(String componentId, Range highlight) {
-		return new HighlightableLabel(componentId, getName(), highlight);
+		return new TypeDefPanel(componentId, this, highlight);
 	}
 
 	@Override

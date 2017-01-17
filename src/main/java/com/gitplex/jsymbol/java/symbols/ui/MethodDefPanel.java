@@ -2,6 +2,7 @@ package com.gitplex.jsymbol.java.symbols.ui;
 
 import org.apache.wicket.markup.head.CssHeaderItem;
 import org.apache.wicket.markup.head.IHeaderResponse;
+import org.apache.wicket.markup.html.WebMarkupContainer;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Panel;
 
@@ -27,7 +28,17 @@ public class MethodDefPanel extends Panel {
 		super.onInitialize();
 		
 		add(new HighlightableLabel("name", methodDef.getName(), highlight));
-		add(new Label("params", methodDef.getParams()));
+		
+		if (methodDef.getMethodParams() != null)
+			add(new Label("methodParams", methodDef.getMethodParams()));
+		else
+			add(new WebMarkupContainer("methodParams").setVisible(false));
+		
+		if (methodDef.getTypeParams() != null) 
+			add(new Label("typeParams", methodDef.getTypeParams()));
+		else
+			add(new WebMarkupContainer("typeParams").setVisible(false));
+		
 		add(new Label("type", methodDef.getType()).setVisible(methodDef.getType()!=null));
 	}
 

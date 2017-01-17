@@ -1,0 +1,14 @@
+package com.sun.javadoc {
+  public class Test<T> extends SuperClass,SuperIntf1,SuperIntf2 {
+    enum Type {
+      A
+      B
+      C
+    }
+    private List<java.util.Map<java.lang.String, String>>[] name
+    private int[][] age
+    public String getName(List<String>, String...)
+    class Internal
+    <A extends B&C, D extends Class<?>> T test()
+  }
+}

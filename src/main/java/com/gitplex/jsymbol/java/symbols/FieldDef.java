@@ -1,5 +1,6 @@
 package com.gitplex.jsymbol.java.symbols;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -8,15 +9,15 @@ import org.apache.wicket.Component;
 import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.request.resource.PackageResourceReference;
+import org.sonar.plugins.java.api.tree.Modifier;
 
 import com.gitplex.jsymbol.Range;
-import com.gitplex.jsymbol.Symbol;
 import com.gitplex.jsymbol.TokenPosition;
 import com.gitplex.jsymbol.java.symbols.ui.FieldDefPanel;
 import com.gitplex.jsymbol.java.symbols.ui.icon.IconLocator;
 import com.gitplex.jsymbol.util.NoAntiCacheImage;
 
-public class FieldDef extends Symbol {
+public class FieldDef extends JavaSymbol {
 
 	private static final long serialVersionUID = 1L;
 
@@ -24,9 +25,9 @@ public class FieldDef extends Symbol {
 	
 	private final List<Modifier> modifiers;
 	
-	public FieldDef(TypeDef parent, String fieldName, TokenPosition position, 
+	public FieldDef(TypeDef parent, String fieldName, TokenPosition position, TokenPosition scope, 
 			@Nullable String type, List<Modifier> modifiers) {
-		super(parent, fieldName, position, modifiers.contains(Modifier.PRIVATE));
+		super(parent, fieldName, position, scope, modifiers.contains(Modifier.PRIVATE), new ArrayList<>());
 		
 		this.type = type;
 		this.modifiers = modifiers;
@@ -45,15 +46,6 @@ public class FieldDef extends Symbol {
 
 	public List<Modifier> getModifiers() {
 		return modifiers;
-	}
-
-	@Override
-	public String getScope() {
-		String scope = getParent().getScope();
-		if (scope != null)
-			return scope + "." + getParent().getName();
-		else
-			return getParent().getName();
 	}
 
 	@Override

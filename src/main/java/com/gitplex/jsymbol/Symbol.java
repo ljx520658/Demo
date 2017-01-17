@@ -1,6 +1,7 @@
 package com.gitplex.jsymbol;
 
 import java.io.Serializable;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -25,8 +26,12 @@ public abstract class Symbol implements Serializable {
 	private String name;
 	
 	private TokenPosition position;
+	
+	private TokenPosition scope;
 
 	private boolean local;
+	
+	private List<String> superSymbolNames;
 	
 	/**
 	 * Construct a symbol
@@ -36,15 +41,23 @@ public abstract class Symbol implements Serializable {
 	 * @param name
 	 * 			name of the symbol. Use <tt>null</tt> if the symbol does not have a name
 	 * @param position
-	 * 			position of the symbol in source file
+	 * 			position of the symbol name in source file. Use <tt>null</tt> if position is unknown
+	 * @param scope
+	 * 			scope of the symbol in source file, for instance a method scope covers the method body. 
+	 * 			Use <tt>null</tt> if scope is unknown 
      * @param local
      * 			whether or not this is a local symbol which can not be accessed from other files
+     * @param superSymbolNames
+     * 			names of symbols this symbol is extended from
      */
-	public Symbol(@Nullable Symbol parent, @Nullable String name, TokenPosition position, boolean local) {
+	public Symbol(@Nullable Symbol parent, @Nullable String name, @Nullable TokenPosition position, 
+			@Nullable TokenPosition scope, boolean local, List<String> superSymbolNames) {
 		this.parent = parent;
 		this.name = name;
 		this.position = position;
+		this.scope = scope;
 		this.local = local;
+		this.superSymbolNames = superSymbolNames;
 	}
 	
 	public Symbol getParent() {
@@ -65,6 +78,7 @@ public abstract class Symbol implements Serializable {
 	
 	public abstract Image renderIcon(String componentId);
 	
+	@Nullable
 	public TokenPosition getPosition() {
 		return position;
 	}
@@ -94,7 +108,24 @@ public abstract class Symbol implements Serializable {
         this.local = local;
     }
 
-    public int score() {
+    @Nullable
+    public TokenPosition getScope() {
+		return scope;
+	}
+
+	public void setScope(TokenPosition scope) {
+		this.scope = scope;
+	}
+
+	public List<String> getSuperSymbolNames() {
+		return superSymbolNames;
+	}
+
+	public void setSuperSymbolNames(List<String> superSymbolNames) {
+		this.superSymbolNames = superSymbolNames;
+	}
+
+	public int score() {
 		int relevance = 1;
 		Symbol parent = this.parent;
 		while (parent != null) {
@@ -106,17 +137,29 @@ public abstract class Symbol implements Serializable {
 	}
 	
 	/**
-	 * Get scope of the symbol. Scope is used to show to the user under which scope the 
-	 * symbol is. For instance, A method &quot;sayHello()&quot; defined in Java class 
-	 * &quot;com.example.HelloWorld&quot; will return the scope as 
-	 * &quot;com.example.HelloWorld&quot;. Return <tt>null</tt> if the symbol does not 
-	 * have a scope
+	 * Get namespace of the symbol
+	 * 
 	 * @return
-     *          get scope of the symbol
+     *          namespace of the symbol, or <tt>null</tt> if the symbol is in global namespace
 	 */
 	@Nullable
-	public abstract String getScope();
-
+	public String getNamespace() {
+		String scope;
+		if (getParent() != null) {
+			String parentNamespace = getParent().getNamespace();
+			String parentName = getParent().getName();
+			if (parentName == null)
+				parentName = "{}";
+			if (parentNamespace != null)
+				scope = parentNamespace + "." + parentName;
+			else
+				scope = parentName;
+		} else {
+			scope = null;
+		}
+		return scope;
+	}
+	
 	/**
 	 * Whether or not this symbol is a primary symbol. Primary symbol will be searched 
 	 * before non-primary symbols. For instance, a Java symbol search will match 
@@ -128,6 +171,10 @@ public abstract class Symbol implements Serializable {
 	 */
 	public abstract boolean isPrimary();
 
+	public boolean isSearchable() {
+		return true;
+	}
+	
 	/**
 	 * Render the symbol in web UI
 	 * 

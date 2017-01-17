@@ -21,7 +21,7 @@ public @interface Resource {
     AuthenticationType authenticationType() default AuthenticationType.CONTAINER;
 
     boolean shareable() default true;
-
+    
     String mappedName() default "";
 
     String description() default "";

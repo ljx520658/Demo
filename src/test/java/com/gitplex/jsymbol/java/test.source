@@ -1,0 +1,24 @@
+/*
+ *some comment here
+ */
+@jdk.Exported
+package @Test com.sun.javadoc;
+
+public class Test<T> extends @A org.apache.SuperClass<@B String> implements SuperIntf1, SuperIntf2 {
+
+  enum Type {A, B, C};
+  
+  private List<java.util.Map<java.lang.String, @D String>>[] name;
+  
+  private @B int@A[][] age;
+  
+  public String getName(List<String> values, String...key) {
+  }
+  
+  class Internal {
+  }
+  
+  <A extends B&C, D extends Class<?>> T test() {
+  }
+
+}

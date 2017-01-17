@@ -1,6 +1,5 @@
 package com.gitplex.jsymbol.javascript;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.junit.Test;
@@ -15,20 +14,19 @@ import com.gitplex.jsymbol.javascript.symbols.MethodSymbol;
 import com.gitplex.jsymbol.javascript.symbols.PropertySymbol;
 import com.gitplex.jsymbol.javascript.symbols.ReferenceSymbol;
 import com.gitplex.jsymbol.javascript.symbols.VariableSymbol;
-import com.google.common.base.Splitter;
 
 public class JavaScriptExtractorTest extends DescribableExtractorTest<JavaScriptSymbol> {
 
 	@Test
 	public void test() {
 		SymbolExtractor<JavaScriptSymbol> extractor = new JavaScriptExtractor();
-		verify(readFile("object-literal.symbols"), extractor.extract(readFile("object-literal.source")));
-		verify(readFile("variables.symbols"), extractor.extract(readFile("variables.source")));
-		verify(readFile("module.symbols"), extractor.extract(readFile("module.source")));
-		verify(readFile("class.symbols"), extractor.extract(readFile("class.source")));
-		verify(readFile("jquery.symbols"), extractor.extract(readFile("jquery.source")));
-		verify(readFile("commonjs.symbols"), extractor.extract(readFile("commonjs.source")));
-		verify(readFile("vue.symbols"), extractor.extract(readFile("vue.source")));
+		verify(readFile("object-literal.outline"), extractor.extract(readFile("object-literal.source")));
+		verify(readFile("variables.outline"), extractor.extract(readFile("variables.source")));
+		verify(readFile("module.outline"), extractor.extract(readFile("module.source")));
+		verify(readFile("class.outline"), extractor.extract(readFile("class.source")));
+		verify(readFile("jquery.outline"), extractor.extract(readFile("jquery.source")));
+		verify(readFile("commonjs.outline"), extractor.extract(readFile("commonjs.source")));
+		verify(readFile("vue.outline"), extractor.extract(readFile("vue.source")));
 	}
 
 	@Override
@@ -70,21 +68,7 @@ public class JavaScriptExtractorTest extends DescribableExtractorTest<JavaScript
 		} else {
 			throw new RuntimeException("Unrecognized symbol class: " + symbol.getClass());
 		}
-		List<JavaScriptSymbol> children = new ArrayList<>();
-		for (JavaScriptSymbol each: context) {
-			if (each.getParent() == symbol)
-				children.add(each);
-		}
-		if (!children.isEmpty()) {
-			builder.append(" {\n");
-			for (JavaScriptSymbol child: children) {
-				for (String line: Splitter.on("\n").omitEmptyStrings().split(describe(context, child))) {
-					builder.append("  ").append(line).append("\n");
-				}
-			}
-			builder.append("}");
-		}
-		builder.append("\n");
+		appendChildren(builder, context, symbol);
 		return builder.toString();
 	}
 }

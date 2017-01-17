@@ -2,11 +2,13 @@ package com.gitplex.jsymbol;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 
+import com.google.common.base.Splitter;
 import com.google.common.io.Resources;
 
 public abstract class DescribableExtractorTest<T extends Symbol> {
@@ -47,6 +49,24 @@ public abstract class DescribableExtractorTest<T extends Symbol> {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	protected void appendChildren(StringBuilder builder, List<T> context, T symbol) {
+		List<T> children = new ArrayList<>();
+		for (T each: context) {
+			if (each.getParent() == symbol)
+				children.add(each);
+		}
+		if (!children.isEmpty()) {
+			builder.append(" {\n");
+			for (T child: children) {
+				for (String line: Splitter.on("\n").omitEmptyStrings().split(describe(context, child))) {
+					builder.append("  ").append(line).append("\n");
+				}
+			}
+			builder.append("}");
+		}
+		builder.append("\n");
 	}
 	
 }

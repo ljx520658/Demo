@@ -1,586 +1,297 @@
 package com.gitplex.jsymbol.java;
 
-import static com.gitplex.jsymbol.java.JavaLexer.*;
-
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Nullable;
 
-import org.antlr.v4.runtime.ANTLRInputStream;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
+import org.sonar.java.ast.parser.JavaParser;
+import org.sonar.plugins.java.api.tree.ArrayTypeTree;
+import org.sonar.plugins.java.api.tree.BlockTree;
+import org.sonar.plugins.java.api.tree.ClassTree;
+import org.sonar.plugins.java.api.tree.CompilationUnitTree;
+import org.sonar.plugins.java.api.tree.EmptyStatementTree;
+import org.sonar.plugins.java.api.tree.EnumConstantTree;
+import org.sonar.plugins.java.api.tree.ExpressionTree;
+import org.sonar.plugins.java.api.tree.IdentifierTree;
+import org.sonar.plugins.java.api.tree.MemberSelectExpressionTree;
+import org.sonar.plugins.java.api.tree.MethodTree;
+import org.sonar.plugins.java.api.tree.Modifier;
+import org.sonar.plugins.java.api.tree.ModifierKeywordTree;
+import org.sonar.plugins.java.api.tree.ModifierTree;
+import org.sonar.plugins.java.api.tree.ModifiersTree;
+import org.sonar.plugins.java.api.tree.PackageDeclarationTree;
+import org.sonar.plugins.java.api.tree.ParameterizedTypeTree;
+import org.sonar.plugins.java.api.tree.PrimitiveTypeTree;
+import org.sonar.plugins.java.api.tree.SyntaxToken;
+import org.sonar.plugins.java.api.tree.Tree;
+import org.sonar.plugins.java.api.tree.TypeParameterTree;
+import org.sonar.plugins.java.api.tree.TypeParameters;
+import org.sonar.plugins.java.api.tree.TypeTree;
+import org.sonar.plugins.java.api.tree.VariableTree;
+import org.sonar.plugins.java.api.tree.WildcardTree;
 
 import com.gitplex.jsymbol.AbstractSymbolExtractor;
+import com.gitplex.jsymbol.ExtractException;
 import com.gitplex.jsymbol.TokenPosition;
-import com.gitplex.jsymbol.Symbol;
 import com.gitplex.jsymbol.java.symbols.CompilationUnit;
 import com.gitplex.jsymbol.java.symbols.FieldDef;
+import com.gitplex.jsymbol.java.symbols.JavaSymbol;
 import com.gitplex.jsymbol.java.symbols.MethodDef;
-import com.gitplex.jsymbol.java.symbols.Modifier;
 import com.gitplex.jsymbol.java.symbols.TypeDef;
-import com.gitplex.jsymbol.util.Token;
-import com.gitplex.jsymbol.util.TokenFilter;
-import com.gitplex.jsymbol.util.TokenStream;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
+import com.gitplex.jsymbol.java.symbols.TypeDef.Kind;
+import com.google.common.base.Charsets;
+import com.google.common.base.Joiner;
+import com.sonar.sslr.api.RecognitionException;
+import com.sonar.sslr.api.typed.ActionParser;
 
-public class JavaExtractor extends AbstractSymbolExtractor<Symbol> {
+public class JavaExtractor extends AbstractSymbolExtractor<JavaSymbol> {
+
+	private static final ActionParser<Tree> PARSER = JavaParser.createParser(Charsets.UTF_8);
 	
-	private static final int[] PRIMITIVES = new int[]{
-		FLOAT, INT, LONG, BOOLEAN, CHAR, BYTE, SHORT, DOUBLE, VOID};
-
-	private static final Map<Integer, Integer> CLOSED_TYPES = 
-			ImmutableMap.of(LBRACE, RBRACE, LBRACK, RBRACK, LPAREN, RPAREN, LT, GT);
-	
-	/* 
-	 * Analyze specified text.
-	 * 
-	 * @before-token: start of file
-	 * @after-token: EOF
-	 * 
-	 */
-	public List<Symbol> extract(String source) {
-		TokenStream stream = new TokenStream(
-				new JavaLexer(new ANTLRInputStream(source)), TokenFilter.DEFAULT_CHANNEL);
-
-		List<Symbol> symbols = new ArrayList<>();
-
-		Token token = stream.next();
-		
-		while (token.is(AT) && !stream.lookAhead(1).is(INTERFACE)) {
-			skipAnnotation(stream);
-			token = stream.current();
+	@Override
+	public List<JavaSymbol> extract(String source) {
+		List<JavaSymbol> symbols = new ArrayList<>();
+		Tree tree;
+		try {
+			tree = PARSER.parse(source);
+		} catch (RecognitionException e) {
+			throw new ExtractException("Error parsing java", e);
 		}
-		
-		CompilationUnit compilationUnit;
-		if (token.is(PACKAGE)) {
-			TokenPosition position = token.getPosition();
-			token = stream.next();
-			String packageName = skipTypeName(stream);
-			compilationUnit = new CompilationUnit(packageName, position);
-			token = stream.next();
-		} else {
-			compilationUnit = new CompilationUnit(null, null);
-		}
-		
-		symbols.add(compilationUnit);
-		
-		while (token.is(IMPORT)) {
-			token = stream.nextType(SEMI);
-			token = stream.next();
-		}
-		
-		while(true) {
-			while (token.is(SEMI))
-				token = stream.next();
-			if (!token.isEof()) {
-				List<Modifier> modifiers = skipModifiers(stream);
-				defineType(stream, symbols, null, compilationUnit.getPackageName(), modifiers);
-				token = stream.next();
-			} else {
-				break;
-			}
+
+		if (tree instanceof CompilationUnitTree) {
+			extractFromCompilationUnitTree((CompilationUnitTree) tree, symbols);
 		}
 		
 		return symbols;
 	}
-	
-	/*
-	 * Populate typeDef with various members in the type and then skip to end of the body.
-	 * 
-	 * @before-token: '{' or ';' (';' occurs inside of a enum definition)
-	 * @after-token: '}'
-	 */
-	private void defineTypeBody(TokenStream stream, List<Symbol> symbols, TypeDef parent, String packageName) {
-		Token token = stream.next();
-		while(true) {
-			while (token.is(SEMI))
-				token = stream.next();
-			if (token.is(LBRACE)) { // instance initializer
-				stream.nextClosed(LBRACE, RBRACE);
-				token = stream.next();
-			} else if (token.is(STATIC) && stream.lookAhead(1).is(LBRACE)) { // static initializer
-				stream.next();
-				stream.nextClosed(LBRACE, RBRACE);
-				token = stream.next();
-			} else if (token.is(RBRACE)) {
-				break;
-			} else {
-				List<Modifier> modifiers = skipModifiers(stream);
-				token = stream.current();
-				if (token.is(LT)) { // skip type params of constructor or method
-					stream.nextClosed(LT, GT);
-					token = stream.next();
-				}
-				if (token.is(CLASS, INTERFACE, ENUM) || token.is(AT) && stream.lookAhead(1).is(INTERFACE)) {
-					defineType(stream, symbols, parent, packageName, modifiers);
-				} else {
-					skipModifiers(stream); // skip annotations applied to method return type
-					token = stream.current();
-					if (token.getText().equals(parent.getName()) && stream.lookAhead(1).is(LPAREN)) {
-						// this is a constructor
-						defineMethod(stream, symbols, parent, modifiers, null);
-					} else {
-						String typeRef = skipTypeRef(stream);
-						token = stream.current();
-						if (token.is(Identifier) && stream.lookAhead(1).is(LPAREN))
-							defineMethod(stream, symbols, parent, modifiers, typeRef);
-						else
-							defineFields(stream, symbols, parent, modifiers, typeRef);
-					}
-				}
-				token = stream.next();
-			}
-		}
-		
+
+	private TokenPosition getPosition(SyntaxToken token) {
+		return new TokenPosition(token.line()-1, token.column(), token.line()-1, token.column()+token.text().length());
 	}
 	
-	/*
-	 * Skip value assigned to a field. We either need to skip to next ';' (end of current statement) 
-	 * or ',' (separator of field declaration). After stripping all top scopes ('[...]', '{...}', 
-	 * '(...)') before encountering ',' or ';', we can guarantee that ';' will not be contained in value, 
-	 * however ',' can still appear in value in below form:
-	 * ...new HashMap<String, String>...
-	 * Also we can not strip scope '<...>' to remove this possibility as '<' '>' can also be used as 
-	 * conditional operators in value expression (for instance: 2>1?a:b). So we assume encountered ',' 
-	 * as field separator first, and continue with our analyzing until our assumption is proved to be 
-	 * true or false. True assumption will result in over skipping and it will return a list of 
-	 * subsequent encountered field names, while false assumption does no harm, as we simply move on 
-	 * to next comma in the loop.       
-	 * 
-	 * @before-token: start of value
-	 * @after-token: next token after value
-	 * 
-	 * @return 
-	 * 			list of subsequent field names if skipping value caused multiple 
-	 * 			fields to be consumed
-	 * 
-	 */
-	private List<Pair<Token, String>> skipValue(TokenStream stream) {
-		List<Pair<Token, String>> fieldInfos = new ArrayList<>();
-		Token token = stream.current();
-		if (token.is(LBRACE)) { // array value
-			stream.nextClosed(LBRACE, RBRACE);
-			stream.next();
-			return fieldInfos;
+	private TokenPosition getPosition(SyntaxToken from, SyntaxToken to) {
+		return new TokenPosition(from.line()-1, from.column(), to.line()-1, to.column()+to.text().length());
+	}
+	
+	private void extractFromCompilationUnitTree(CompilationUnitTree compilationUnit, List<JavaSymbol> symbols) {
+		JavaSymbol parent = null;
+		PackageDeclarationTree packageDeclaration = compilationUnit.packageDeclaration();
+		if (packageDeclaration != null) {
+			ExpressionTree expression = packageDeclaration.packageName();
+			TokenPosition position = getPosition(expression.firstToken(), expression.lastToken());
+			TokenPosition scope = getPosition(packageDeclaration.firstToken(), packageDeclaration.lastToken());
+			String packageName = getFullQualifiedName(expression);
+			parent = new CompilationUnit(packageName, position, scope);
+			symbols.add(parent);
+		}
+		for (Tree tree: compilationUnit.types()) {
+			if (tree instanceof ClassTree) {
+				extractFromClassTree((ClassTree) tree, parent, symbols);
+			}
+		}
+	}
+	
+	private void extractFromClassTree(ClassTree classTree, JavaSymbol parent, List<JavaSymbol> symbols) {
+		String typeName = classTree.simpleName().name();
+		TokenPosition position = getPosition(classTree.simpleName().identifierToken());
+		TokenPosition scope = getPosition(classTree.firstToken(), classTree.lastToken());
+		List<Modifier> modifiers = getModifiers(classTree.modifiers());
+		TypeDef.Kind kind;
+		switch (classTree.kind()) {
+		case CLASS: 
+			kind = Kind.CLASS;
+			break;
+		case INTERFACE: 
+			kind = Kind.INTERFACE;
+			break;
+		case ANNOTATION_TYPE:
+			kind = Kind.ANNOTATION;
+			break;
+		case ENUM:
+			kind = Kind.ENUM;
+			break;
+		default:
+			throw new ExtractException("Unexpected kind: " + classTree.kind());
+		}
+		List<String> superClassNames = new ArrayList<>();
+		TypeTree typeTree = classTree.superClass();
+		if (typeTree != null)
+			superClassNames.add(getSimpleTypeName(typeTree));
+		for (TypeTree each: classTree.superInterfaces()) {
+			superClassNames.add(getSimpleTypeName(each));
+		}
+		
+		String typeParameters = describeTypeParameters(classTree.typeParameters());
+		TypeDef typeDef = new TypeDef(parent, typeName, position, scope, kind, typeParameters, modifiers, 
+				superClassNames);
+		symbols.add(typeDef);
+		
+		for (Tree tree: classTree.members()) {
+			if (tree instanceof EmptyStatementTree || tree instanceof BlockTree) {
+				continue;
+			} else if (tree instanceof ClassTree) {
+				extractFromClassTree((ClassTree) tree, typeDef, symbols);
+			} else if (tree instanceof EnumConstantTree) {
+				extractFromEnumConstantTree((EnumConstantTree) tree, typeDef, symbols);
+			} else if (tree instanceof VariableTree) {
+				extractFromVariableTree((VariableTree) tree, typeDef, symbols);
+			} else if (tree instanceof MethodTree) {
+				extractFromMethodTree((MethodTree) tree, typeDef, symbols);
+			} else {
+				throw new ExtractException("Unexpected member type: " + tree.getClass());
+			}
+		}
+	}
+	
+	private void extractFromVariableTree(VariableTree variableTree, TypeDef parent, List<JavaSymbol> symbols) {
+		String fieldName = variableTree.simpleName().name();
+		TokenPosition position = getPosition(variableTree.simpleName().identifierToken());
+		TokenPosition scope = getPosition(variableTree.firstToken(), variableTree.lastToken());
+		List<Modifier> modifiers = getModifiers(variableTree.modifiers());
+		String typeInfo = describeTypeTree(variableTree.type());
+		FieldDef fieldDef = new FieldDef(parent, fieldName, position, scope, typeInfo, modifiers);
+		symbols.add(fieldDef);
+	}
+	
+	private void extractFromMethodTree(MethodTree methodTree, TypeDef parent, List<JavaSymbol> symbols) {
+		String methodName = methodTree.simpleName().name();
+		TokenPosition position = getPosition(methodTree.simpleName().identifierToken());
+		TokenPosition scope = getPosition(methodTree.firstToken(), methodTree.lastToken());
+		List<Modifier> modifiers = getModifiers(methodTree.modifiers());
+		String typeInfo = describeTypeTree(methodTree.returnType());
+		String methodParamInfo = describeMethodParameters(methodTree.parameters());
+		String typeParamInfo = describeTypeParameters(methodTree.typeParameters());
+		MethodDef methodDef = new MethodDef(parent, methodName, position, scope, typeInfo, methodParamInfo, 
+				typeParamInfo, modifiers);
+		symbols.add(methodDef);
+	}
+	
+	private @Nullable String describeTypeParameters(TypeParameters typeParameters) {
+		if (typeParameters == null || typeParameters.isEmpty()) {
+			return null;
 		} else {
-			while (true) {
-				token = stream.nextType(COMMA, SEMI, LBRACE, LBRACK, LPAREN);
-				if (token.is(LBRACE, LBRACK, LPAREN)) { 
-					// skip scopes and the only case for comma inside a value is inside type arguments like below:
-					// ... new HashMap<String, String>...
-					stream.nextClosed(token.getType(), CLOSED_TYPES.get(token.getType()));
-				} else if (token.is(SEMI)) {
-					break;
-				} else { // token is ','
-					token.checkType(COMMA);
-					List<Pair<Token, String>> subsequentFieldTokens = assumeFieldSeparator(stream);
-					if (subsequentFieldTokens != null) { // assumption is correct
-						fieldInfos.addAll(subsequentFieldTokens);
-						break;
-					}
-				}
-			}
-			return fieldInfos;
-		}
-	}
-
-	/*
-	 * Assume current token is field separator and continue to analyze the stream. Upon 
-	 * analyzing surprise, we return a null value to indicate the assumption is incorrect. 
-	 * 
-	 * @before-token: ','
-	 * @after-token: next field separator (',') or ';' if assumption is 
-	 * 					correct; or any position in middle of value if 
-	 * 					assumption is incorrect
-	 * 
-	 * @return 
-	 * 			list of encountered subsequent field tokens and array indicators if assumption is correct, or 
-	 * 			null if assumption is incorrect 
-	 * 
-	 */
-	private List<Pair<Token, String>> assumeFieldSeparator(TokenStream stream) {
-		while (true) {
-			Token token = stream.next();
-			if (token.is(Identifier)) {
-				List<Pair<Token, String>> fieldInfos = new ArrayList<>();
-				stream.next();
-				fieldInfos.add(new ImmutablePair<Token, String>(token, skipDims(stream)));
-				token = stream.current();
-				if (token.is(ASSIGN)) { // assumption convinced
-					stream.next();
-					fieldInfos.addAll(skipValue(stream));
-					return fieldInfos;
-				} else if (token.is(SEMI)) { // assumption convinced
-					return fieldInfos;
-				} else if (token.is(COMMA)) { // assumption still not convinced 
-					List<Pair<Token, String>> subsequentFieldInfos = assumeFieldSeparator(stream);
-					if (subsequentFieldInfos != null) {
-						fieldInfos.addAll(subsequentFieldInfos);
-						return fieldInfos;
-					} else { 
-						return null;
-					}
-				} else { // assumption is incorrect
-					return null;
-				}
-			} else { // assumption is incorrect
-				return null;
-			}
-		}
-	}
-	
-	/*
-	 * Skip possible dims.
-	 * 
-	 * @before-token: start of possible dims
-	 * @after-token: next token after dims, or remain unchanged if no dims  
-	 */
-	private String skipDims(TokenStream stream) {
-		String dims = "";
-		while (true) {
-			skipAnnotations(stream);
-			Token token = stream.current();
-			if (token.is(LBRACK)) {
-				dims += "[]";
-				stream.nextClosed(LBRACK, RBRACK);
-				stream.next();
-			} else {
-				break;
-			}
-		}
-		return dims;
-	}
-	
-	/*
-	 * Skip type reference.
-	 * 
-	 * @before-token: start of type ref
-	 * @after-token: next token after type ref
-	 */
-	private String skipTypeRef(TokenStream stream) {
-		Token token = stream.current();
-		String typeRef = token.getText();
-		if (token.is(PRIMITIVES)) {
-			stream.next();
-		} else { 
-			typeRef = skipTypeRefSegment(stream);
-			token = stream.current();
-			while (token.is(DOT)) {
-				typeRef += ".";
-				stream.next();
-				typeRef += skipTypeRefSegment(stream);
-				token = stream.current();
-			}
-		}
-		typeRef += skipDims(stream); 
-		return typeRef;
-	}
-
-	/*
-	 * Skip type ref segment.
-	 * 
-	 * @begin-token: start of a type ref segment including possible annotations
-	 * @end-token: next token after type ref segment
-	 */
-	private String skipTypeRefSegment(TokenStream stream) {
-		skipModifiers(stream);
-		String identifier = stream.current().getText();
-		Token token = stream.next();
-		if (token.is(LT)) {
-			int tokenPos = stream.index();
-			stream.nextClosed(LT, GT);
-			TokenStream typeArgStream = new TokenStream(stream.between(tokenPos, stream.index()));
-			token = typeArgStream.next();
-			while (true) {
-				skipModifiers(typeArgStream);
-				token = typeArgStream.current();
-				if (token.isEof())
-					break;
-				else
-					identifier += token.getText();
-				token = typeArgStream.next();
-			}
-			stream.next();
- 		}
-		return identifier;
-	}
-	
-	/*
-	 * Define a method or constructor.
-	 * 
-	 * @before-token: identifier of the method
-	 * @after-token: '}' for class method, ';' for interface method or annotation attribute
-	 */
-	private void defineMethod(TokenStream stream, List<Symbol> symbols, TypeDef parent, 
-			List<Modifier> modifiers, @Nullable String typeRef) {
-		Token token = stream.current();
-		String name = token.getText();
-		TokenPosition position = token.getPosition(); 
-		String params = null;
-		String type = null;
-		
-		stream.next().checkType(LPAREN); // '('
-		token = stream.next();
-		while (!token.is(RPAREN)) {
-			skipModifiers(stream);
-			String paramType = skipTypeRef(stream);
-			skipModifiers(stream); // skip possible annotation applied to '...'
-			token = stream.current();
-			if (token.is(ELLIPSIS)) { // varargs
-				paramType += "...";
-				token = stream.next();
-				if (token.is(Identifier))
-					token = stream.next();
-			} else if (token.is(THIS)) { // Receiver parameter
-				token = stream.next();
-				paramType = null;
-			} else if (token.is(Identifier) && stream.lookAhead(1).is(DOT)) { // Receiver parameter
-				stream.next().checkType(DOT); // '.'
-				stream.next().checkType(THIS); // 'this'
-				token = stream.next();
-				paramType = null;
-			} else if (token.is(Identifier)) {
-				token = stream.next();
-				paramType += skipDims(stream);
-				token = stream.current();
-			} else { // No identifier, this is toString() version of MethodDef
-				
-			}
-			if (paramType != null) {
-				if (params != null)
-					params += ", " + paramType;
-				else
-					params = paramType;
-			}
-			if (token.is(COMMA))
-				token = stream.next();
-		}
-		token = stream.next();
-		if (typeRef != null)
-			type = typeRef + skipDims(stream);
-
-		token = stream.current();
-		if (token.is(THROWS)) { 
-			while (true) {
-				token = stream.nextType(SEMI, LBRACE, LPAREN);
-				if (token.is(LPAREN)) {
-					stream.nextClosed(LPAREN, RPAREN);
-					token = stream.next();
+			List<String> list = new ArrayList<>();
+			for (TypeParameterTree typeParameterTree: typeParameters) {
+				if (typeParameterTree.extendToken() == null) {
+					list.add(typeParameterTree.identifier().name());
 				} else {
-					break;
+					List<String> bounds = new ArrayList<>();
+					for (Tree boundTree: typeParameterTree.bounds()) {
+						if (boundTree instanceof IdentifierTree)
+							bounds.add(((IdentifierTree)boundTree).name());
+						else if (boundTree instanceof TypeTree) 
+							bounds.add(describeTypeTree((TypeTree) boundTree));
+						else
+							throw new ExtractException("Unexpected bound tree type: " + boundTree.getClass());
+					}
+					list.add(typeParameterTree.identifier().name() + " extends " + Joiner.on("&").join(bounds));
 				}
 			}
-		} else if (token.is(DEFAULT)) {
-			stream.nextType(SEMI);
-		}
-
-		token = stream.current();
-		
-		if (token.is(LBRACE))
-			stream.nextClosed(LBRACE, RBRACE);
-		
-		symbols.add(new MethodDef(parent, name, position, type, params, modifiers));
-	}
-	
-	/*
-	 * Define fields declared in a single statement. 
-	 * 
-	 * @before-token: identifier of field declaration statement
-	 * @after-token: end of fields declaration statement, which is ';'
-	 */
-	private void defineFields(TokenStream stream, List<Symbol> symbols, TypeDef parent, 
-			List<Modifier> modifiers, String typeRef) {
-		Token token = stream.current();
-		while (!token.is(SEMI)) {
-			stream.next();
-			symbols.add(new FieldDef(parent, token.getText(), token.getPosition(), typeRef + skipDims(stream), modifiers));
-			token = stream.current();
-			if (token.is(ASSIGN)) {
-				stream.next();
-				for (Pair<Token, String> fieldInfo: skipValue(stream)) {
-					symbols.add(new FieldDef(parent, fieldInfo.getLeft().getText(), fieldInfo.getLeft().getPosition(), 
-							typeRef + fieldInfo.getRight(), modifiers));
-				}
-				token = stream.current();
-			} 
-			if (token.is(COMMA))
-				token = stream.next();
+			return "<" + Joiner.on(", ").join(list) + ">";
 		}
 	}
 	
-	/*
-	 * Define a type. 
-	 * 
-	 * @before-token: 'class', 'interface', 'enum', or '@interface'
-	 * @after-token: '}'
-	 */
-	private void defineType(TokenStream stream, List<Symbol> symbols, Symbol parent, String packageName, List<Modifier> modifiers) {
-		Token token = stream.current();
-		if (token.is(AT) && stream.lookAhead(1).is(INTERFACE)) {
-			stream.next().checkType(INTERFACE); // 'interface'
-			stream.next().checkType(Identifier); // identifier
-			token = defineTypeHead(stream);
-			TypeDef typeDef = new TypeDef(parent, packageName, token.getText(), token.getPosition(), TypeDef.Kind.ANNOTATION, modifiers);			
-			symbols.add(typeDef);
-			defineTypeBody(stream, symbols, typeDef, packageName);
-		} else if (token.is(CLASS)) {
-			stream.next().checkType(Identifier); // identifier
-			token = defineTypeHead(stream);
-			TypeDef typeDef = new TypeDef(parent, packageName, token.getText(), token.getPosition(), TypeDef.Kind.CLASS, modifiers);			
-			symbols.add(typeDef);
-			defineTypeBody(stream, symbols, typeDef, packageName);
-		} else if (token.is(INTERFACE)) {
-			stream.next().checkType(Identifier); // identifier
-			token = defineTypeHead(stream);
-			TypeDef typeDef = new TypeDef(parent, packageName, token.getText(), token.getPosition(), TypeDef.Kind.INTERFACE, modifiers);			
-			symbols.add(typeDef);
-			defineTypeBody(stream, symbols, typeDef, packageName);
-		} else { 
-			stream.next().checkType(Identifier); // identifier
-			token = defineTypeHead(stream);
-			TypeDef typeDef = new TypeDef(parent, packageName, token.getText(), token.getPosition(), TypeDef.Kind.ENUM, modifiers);			
-			symbols.add(typeDef);
-			
-			// process enum constants
-			token = stream.next();
-			while (true) {
-				if (token.is(SEMI, RBRACE)) {
-					break;
-				} else if (token.is(COMMA)) {
-					token = stream.next();
-				} else {
-					skipModifiers(stream); // skip annotations
-					
-					symbols.add(new FieldDef(typeDef, stream.current().getText(), stream.current().getPosition(), 
-							null, Lists.newArrayList(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)));
-					token = stream.next();
-					if (token.is(LPAREN)) { // enum constant arguments
-						stream.nextClosed(LPAREN, RPAREN);
-						token = stream.next();
-					}
-					if (token.is(LBRACE)) { // enum constant class body
-						stream.nextClosed(LBRACE, RBRACE);
-						token = stream.next();
+	private @Nullable String describeTypeTree(TypeTree typeTree) {
+		if (typeTree instanceof IdentifierTree || typeTree instanceof MemberSelectExpressionTree) {
+			return getFullQualifiedName((ExpressionTree) typeTree);
+		} else if (typeTree instanceof ParameterizedTypeTree) {
+			ParameterizedTypeTree parameterizedTypeTree = (ParameterizedTypeTree) typeTree;
+			List<String> typeArguments = new ArrayList<>();
+			for (Tree typeArgument: parameterizedTypeTree.typeArguments()) {
+				if (typeArgument instanceof TypeTree) {
+					typeArguments.add(describeTypeTree((TypeTree) typeArgument));
+				} else if (typeArgument instanceof WildcardTree) {
+					WildcardTree wildcardTree = (WildcardTree) typeArgument;
+					if (wildcardTree.kind() == Tree.Kind.UNBOUNDED_WILDCARD) {
+						typeArguments.add("?");
+					} else if (wildcardTree.kind() == Tree.Kind.EXTENDS_WILDCARD) {
+						typeArguments.add("? extends " + describeTypeTree(wildcardTree.bound()));
+					} else if (wildcardTree.kind() == Tree.Kind.SUPER_WILDCARD) {
+						typeArguments.add("? super " + describeTypeTree(wildcardTree.bound()));
 					}
 				}
 			}
-			
-			if (token.is(SEMI))
-				defineTypeBody(stream, symbols, typeDef, packageName);
-		}
-	}
-	
-	/*
-	 * Populate typeDef with identifier and then skip to type body.
-	 *  
-	 * @before-token: type identifier 
-	 * @after-token: start of type body which is '{' 
-	 */
-	private Token defineTypeHead(TokenStream stream) {
-		Token typeHeadToken = stream.current();
-		
-		while (true) {
-			Token token = stream.nextType(LBRACE, LPAREN);
-			if (token.is(LPAREN)) {
-				stream.nextClosed(LPAREN, RPAREN);
-				token = stream.next();
+			String unparameterizedTypeInfo = describeTypeTree(parameterizedTypeTree.type());
+			return unparameterizedTypeInfo + "<" + Joiner.on(", ").join(typeArguments) + ">";
+		} else if (typeTree instanceof ArrayTypeTree) {
+			ArrayTypeTree arrayTypeTree = (ArrayTypeTree) typeTree;
+			if (arrayTypeTree.ellipsisToken() != null) {
+				return describeTypeTree(arrayTypeTree.type()) + "...";
 			} else {
-				break;
+				return describeTypeTree(arrayTypeTree.type()) + "[]";
 			}
+		} else if (typeTree instanceof PrimitiveTypeTree) {
+			PrimitiveTypeTree primitiveTypeTree = (PrimitiveTypeTree) typeTree;
+			return primitiveTypeTree.keyword().text();
+		} else if (typeTree == null) {
+			return null;
+		} else {
+			throw new ExtractException("Unexpected type tree: " + typeTree.getClass());
 		}
-		
-		return typeHeadToken;
 	}
 	
-	/*
-	 * This method skips possible modifiers from current stream position. 
-	 * 
-	 * @before-token: possible start of modifiers
-	 * @after-token: remain unchanged or token after the modifiers if there are modifiers 
-	 */
-	private List<Modifier> skipModifiers(TokenStream stream) {
+	private @Nullable String describeMethodParameters(List<VariableTree> methodParameters) {
+		if (methodParameters.isEmpty()) {
+			return null;
+		} else {
+			List<String> params = new ArrayList<>();
+			for (VariableTree variableTree: methodParameters) {
+				params.add(describeTypeTree(variableTree.type()));
+			}
+			return Joiner.on(", ").join(params);
+		}
+	}
+	
+	private void extractFromEnumConstantTree(EnumConstantTree enumConstantTree, TypeDef parent, 
+			List<JavaSymbol> symbols) {
+		List<Modifier> modifiers = getModifiers(enumConstantTree.modifiers());
+		String fieldName = enumConstantTree.simpleName().name();
+		TokenPosition position = getPosition(enumConstantTree.simpleName().identifierToken());
+		TokenPosition scope = getPosition(enumConstantTree.firstToken(), enumConstantTree.lastToken());
+		FieldDef fieldDef = new FieldDef(parent, fieldName, position, scope, null, modifiers);
+		symbols.add(fieldDef);
+	}
+	
+	private String getSimpleTypeName(TypeTree typeTree) {
+		if (typeTree instanceof IdentifierTree) {
+			IdentifierTree identifierTree = (IdentifierTree) typeTree;
+			return identifierTree.name();
+		} else if (typeTree instanceof MemberSelectExpressionTree) {
+			MemberSelectExpressionTree memberSelectExpressionTree = (MemberSelectExpressionTree) typeTree;
+			return memberSelectExpressionTree.identifier().name();
+		} else if (typeTree instanceof ParameterizedTypeTree) {
+			ParameterizedTypeTree parameterizedTypeTree = (ParameterizedTypeTree) typeTree;
+			return getSimpleTypeName(parameterizedTypeTree.type());
+		} else {
+			throw new ExtractException("Unexpected type tree: " + typeTree.getClass());
+		}
+	}
+	
+	private List<Modifier> getModifiers(ModifiersTree modifiersTree) {
 		List<Modifier> modifiers = new ArrayList<>();
-		Token token = stream.current();
-		while (true) {
-			if (token.is(AT) && !stream.lookAhead(1).is(INTERFACE)) {
-				skipAnnotation(stream);
-				token = stream.current();
-			} else if (!token.is(StringLiteral)) {
-				Modifier modifier = null;
-				for (Modifier each: Modifier.values()) {
-					if (each.name().toLowerCase().equals(token.getText())) {
-						modifier = each;
-						break;
-					}
-				}
-				if (modifier != null) {
-					modifiers.add(modifier);
-					token = stream.next();
-				} else {
-					break;
-				}
-			} else {
-				break;
+		for (ModifierTree modifierTree: modifiersTree) {
+			if (modifierTree instanceof ModifierKeywordTree) {
+				ModifierKeywordTree modifierKeywordTree = (ModifierKeywordTree) modifierTree;
+				modifiers.add(modifierKeywordTree.modifier());
 			}
 		}
 		return modifiers;
 	}
 	
-	/*
-	 * This method skips possible annotations from current stream position. 
-	 * 
-	 * @before-token: possible start of annotations
-	 * @after-token: remain unchanged or token after the annotations if there are annotations
-	 */
-	private void skipAnnotations(TokenStream stream) {
-		Token token = stream.current();
-		while (true) {
-			if (token.is(AT) && !stream.lookAhead(1).is(INTERFACE)) {
-				skipAnnotation(stream);
-				token = stream.current();
-			} else {
-				break;
-			}
+	private String getFullQualifiedName(ExpressionTree expression) {
+		if (expression instanceof IdentifierTree) {
+			IdentifierTree identifier = (IdentifierTree) expression;
+			return identifier.name();
+		} else if (expression instanceof MemberSelectExpressionTree) {
+			MemberSelectExpressionTree memberSelectExpression = (MemberSelectExpressionTree) expression;
+			return getFullQualifiedName(memberSelectExpression.expression()) + 
+					"." + memberSelectExpression.identifier().name();
+		} else {
+			throw new ExtractException("Unexpected expression type: " + expression.getClass());
 		}
 	}
 	
-	/*
-	 * Skip a single annotation.
-	 * 
-	 * @before-token: '@'
-	 * @after-token: token after the annotation
-	 */
-	private void skipAnnotation(TokenStream stream) {
-		stream.next();
-		skipTypeName(stream);
-		Token token = stream.current();
-		if (token.is(LPAREN)) {
-			token = stream.nextClosed(LPAREN, RPAREN);
-			token = stream.next();
-		}
-	}
-	
-	/*
-	 * Skip type name sections. 
-	 * 
-	 * @before-token: first section of type name
-	 * @after-token: token after type name  
-	 */
-	private String skipTypeName(TokenStream stream) {
-		String typeName = stream.current().getText();
-		Token token = stream.next();
-		while (token.is(DOT)) {
-			typeName += ".";
-			token = stream.next();
-			typeName += token.getText();
-			token = stream.next();
-		}
-		return typeName;
-	}
-
 	@Override
 	public int getVersion() {
 		return 1;
