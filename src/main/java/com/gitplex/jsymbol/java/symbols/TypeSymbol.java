@@ -1,5 +1,6 @@
 package com.gitplex.jsymbol.java.symbols;
 
+import java.util.EnumSet;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -8,8 +9,8 @@ import org.apache.wicket.Component;
 import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.request.resource.PackageResourceReference;
-import org.sonar.plugins.java.api.tree.Modifier;
 
+import com.github.javaparser.ast.Modifier;
 import com.gitplex.jsymbol.Range;
 import com.gitplex.jsymbol.Symbol;
 import com.gitplex.jsymbol.TokenPosition;
@@ -17,7 +18,7 @@ import com.gitplex.jsymbol.java.symbols.ui.TypeDefPanel;
 import com.gitplex.jsymbol.java.symbols.ui.icon.IconLocator;
 import com.gitplex.jsymbol.util.NoAntiCacheImage;
 
-public class TypeDef extends JavaSymbol {
+public class TypeSymbol extends JavaSymbol {
 
 	private static final long serialVersionUID = 1L;
 
@@ -27,10 +28,10 @@ public class TypeDef extends JavaSymbol {
 	
 	private final String typeParams;
 	
-	private final List<Modifier> modifiers;
+	private final EnumSet<Modifier> modifiers;
 
-	public TypeDef(@Nullable Symbol parent, String typeName, TokenPosition position, TokenPosition scope,
-			Kind kind, @Nullable String typeParams, List<Modifier> modifiers, List<String> superTypeNames) {
+	public TypeSymbol(@Nullable Symbol parent, String typeName, TokenPosition position, TokenPosition scope,
+			Kind kind, @Nullable String typeParams, EnumSet<Modifier> modifiers, List<String> superTypeNames) {
 		super(parent, typeName, position, scope, modifiers.contains(Modifier.PRIVATE), superTypeNames);
 
 		this.kind = kind;
@@ -46,7 +47,7 @@ public class TypeDef extends JavaSymbol {
 		return typeParams;
 	}
 
-	public List<Modifier> getModifiers() {
+	public EnumSet<Modifier> getModifiers() {
 		return modifiers;
 	}
 

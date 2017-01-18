@@ -2,10 +2,12 @@
  *some comment here
  */
 @jdk.Exported
-package @Test com.sun.javadoc;
+package com.sun.javadoc;
 
-public class Test<T> extends @A org.apache.SuperClass<@B String> implements SuperIntf1, SuperIntf2 {
+public class Test<T extends A&B, M extends java.util.List<?>> extends @A org.apache.SuperClass<@B String> implements SuperIntf1, SuperIntf2 {
 
+  private static int a;
+  
   enum Type {A, B, C};
   
   private List<java.util.Map<java.lang.String, @D String>>[] name;

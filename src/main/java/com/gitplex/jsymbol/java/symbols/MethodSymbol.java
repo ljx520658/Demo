@@ -1,7 +1,7 @@
 package com.gitplex.jsymbol.java.symbols;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.EnumSet;
 
 import javax.annotation.Nullable;
 
@@ -9,15 +9,15 @@ import org.apache.wicket.Component;
 import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.request.resource.PackageResourceReference;
-import org.sonar.plugins.java.api.tree.Modifier;
 
+import com.github.javaparser.ast.Modifier;
 import com.gitplex.jsymbol.Range;
 import com.gitplex.jsymbol.TokenPosition;
 import com.gitplex.jsymbol.java.symbols.ui.MethodDefPanel;
 import com.gitplex.jsymbol.java.symbols.ui.icon.IconLocator;
 import com.gitplex.jsymbol.util.NoAntiCacheImage;
 
-public class MethodDef extends JavaSymbol {
+public class MethodSymbol extends JavaSymbol {
 
 	private static final long serialVersionUID = 1L;
 
@@ -27,11 +27,11 @@ public class MethodDef extends JavaSymbol {
 	
 	private final String typeParams;
 
-	private final List<Modifier> modifiers;
+	private final EnumSet<Modifier> modifiers;
 	
-	public MethodDef(TypeDef parent, String methodName, TokenPosition position, TokenPosition scope,
+	public MethodSymbol(TypeSymbol parent, String methodName, TokenPosition position, TokenPosition scope,
 			@Nullable String type, @Nullable String methodParams, @Nullable String typeParams, 
-			List<Modifier> modifiers) {
+			EnumSet<Modifier> modifiers) {
 		super(parent, methodName, position, scope, modifiers.contains(Modifier.PRIVATE), new ArrayList<>());
 		
 		this.type = type;
@@ -73,7 +73,7 @@ public class MethodDef extends JavaSymbol {
 		return typeParams;
 	}
 
-	public List<Modifier> getModifiers() {
+	public EnumSet<Modifier> getModifiers() {
 		return modifiers;
 	}
 

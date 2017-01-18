@@ -7,17 +7,17 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Panel;
 
 import com.gitplex.jsymbol.Range;
-import com.gitplex.jsymbol.java.symbols.MethodDef;
+import com.gitplex.jsymbol.java.symbols.MethodSymbol;
 import com.gitplex.jsymbol.util.HighlightableLabel;
 
 @SuppressWarnings("serial")
 public class MethodDefPanel extends Panel {
 
-	private final MethodDef methodDef;
+	private final MethodSymbol methodDef;
 	
 	private final Range highlight;
 	
-	public MethodDefPanel(String id, MethodDef methodDef, Range highlight) {
+	public MethodDefPanel(String id, MethodSymbol methodDef, Range highlight) {
 		super(id);
 		this.methodDef = methodDef;
 		this.highlight = highlight;

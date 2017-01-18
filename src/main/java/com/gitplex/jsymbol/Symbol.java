@@ -91,6 +91,17 @@ public abstract class Symbol implements Serializable {
     public boolean isLocal() {
         return local;
     }
+    
+    public boolean isEffectivelyLocal() {
+    	Symbol current = this;
+    	do {
+    		if (current.isLocal())
+    			return true;
+    		current = current.getParent();
+    	} while (current != null);
+    	
+    	return false;
+    }
 
     public void setParent(Symbol parent) {
         this.parent = parent;
@@ -125,17 +136,6 @@ public abstract class Symbol implements Serializable {
 		this.superSymbolNames = superSymbolNames;
 	}
 
-	public int score() {
-		int relevance = 1;
-		Symbol parent = this.parent;
-		while (parent != null) {
-			if (parent.getName() != null)
-				relevance++;
-			parent = parent.parent;
-		}
-		return relevance*(name !=null? name.length():1);
-	}
-	
 	/**
 	 * Get namespace of the symbol
 	 * 

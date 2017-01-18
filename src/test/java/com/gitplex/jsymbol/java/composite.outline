@@ -1,7 +1,5 @@
 package com.example {
   enum MyEnum {
-    ENUM1
-    ENUM2
     private String name
     private String[] values
     MyEnum(String, String...)
@@ -9,6 +7,8 @@ package com.example {
     public void setName(String)
     public String[] getValues()
     public void setValues(String[])
+    ENUM1
+    ENUM2
   }
   @interface MyAnn {
     String[] values()

@@ -1,7 +1,7 @@
 package com.gitplex.jsymbol.java.symbols;
 
 import java.util.ArrayList;
-import java.util.List;
+import java.util.EnumSet;
 
 import javax.annotation.Nullable;
 
@@ -9,24 +9,24 @@ import org.apache.wicket.Component;
 import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.markup.html.image.Image;
 import org.apache.wicket.request.resource.PackageResourceReference;
-import org.sonar.plugins.java.api.tree.Modifier;
 
+import com.github.javaparser.ast.Modifier;
 import com.gitplex.jsymbol.Range;
 import com.gitplex.jsymbol.TokenPosition;
 import com.gitplex.jsymbol.java.symbols.ui.FieldDefPanel;
 import com.gitplex.jsymbol.java.symbols.ui.icon.IconLocator;
 import com.gitplex.jsymbol.util.NoAntiCacheImage;
 
-public class FieldDef extends JavaSymbol {
+public class FieldSymbol extends JavaSymbol {
 
 	private static final long serialVersionUID = 1L;
 
 	private final String type;
 	
-	private final List<Modifier> modifiers;
+	private final EnumSet<Modifier> modifiers;
 	
-	public FieldDef(TypeDef parent, String fieldName, TokenPosition position, TokenPosition scope, 
-			@Nullable String type, List<Modifier> modifiers) {
+	public FieldSymbol(TypeSymbol parent, String fieldName, TokenPosition position, TokenPosition scope, 
+			@Nullable String type, EnumSet<Modifier> modifiers) {
 		super(parent, fieldName, position, scope, modifiers.contains(Modifier.PRIVATE), new ArrayList<>());
 		
 		this.type = type;
@@ -44,7 +44,7 @@ public class FieldDef extends JavaSymbol {
 		return type;
 	}
 
-	public List<Modifier> getModifiers() {
+	public EnumSet<Modifier> getModifiers() {
 		return modifiers;
 	}
 

@@ -2,8 +2,6 @@ package com.gitplex.jsymbol.java.symbols;
 
 import java.util.ArrayList;
 
-import javax.annotation.Nullable;
-
 import org.apache.wicket.Component;
 import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.markup.html.basic.Label;
@@ -15,12 +13,11 @@ import com.gitplex.jsymbol.TokenPosition;
 import com.gitplex.jsymbol.java.symbols.ui.icon.IconLocator;
 import com.gitplex.jsymbol.util.NoAntiCacheImage;
 
-public class CompilationUnit extends JavaSymbol {
+public class CompilationUnitSymbol extends JavaSymbol {
 	
 	private static final long serialVersionUID = 1L;
 	
-	public CompilationUnit(@Nullable String packageName, @Nullable TokenPosition position, 
-			@Nullable TokenPosition scope) {
+	public CompilationUnitSymbol(String packageName, TokenPosition position, TokenPosition scope) {
 		super(null, packageName, position, scope, false, new ArrayList<>());
 	}
 	

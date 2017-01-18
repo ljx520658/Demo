@@ -6,17 +6,17 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Panel;
 
 import com.gitplex.jsymbol.Range;
-import com.gitplex.jsymbol.java.symbols.FieldDef;
+import com.gitplex.jsymbol.java.symbols.FieldSymbol;
 import com.gitplex.jsymbol.util.HighlightableLabel;
 
 @SuppressWarnings("serial")
 public class FieldDefPanel extends Panel {
 
-	private final FieldDef fieldDef;
+	private final FieldSymbol fieldDef;
 	
 	private final Range highlight;
 	
-	public FieldDefPanel(String id, FieldDef fieldDef, Range highlight) {
+	public FieldDefPanel(String id, FieldSymbol fieldDef, Range highlight) {
 		super(id);
 		this.fieldDef = fieldDef;
 		this.highlight = highlight;
