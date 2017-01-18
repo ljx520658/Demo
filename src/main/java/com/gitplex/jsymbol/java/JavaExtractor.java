@@ -42,20 +42,16 @@ import com.gitplex.jsymbol.java.symbols.TypeDef;
 import com.gitplex.jsymbol.java.symbols.TypeDef.Kind;
 import com.google.common.base.Charsets;
 import com.google.common.base.Joiner;
-import com.sonar.sslr.api.RecognitionException;
-import com.sonar.sslr.api.typed.ActionParser;
 
 public class JavaExtractor extends AbstractSymbolExtractor<JavaSymbol> {
 
-	private static final ActionParser<Tree> PARSER = JavaParser.createParser(Charsets.UTF_8);
-	
 	@Override
 	public List<JavaSymbol> extract(String source) {
 		List<JavaSymbol> symbols = new ArrayList<>();
 		Tree tree;
 		try {
-			tree = PARSER.parse(source);
-		} catch (RecognitionException e) {
+			tree = JavaParser.createParser(Charsets.UTF_8).parse(source);
+		} catch (Exception e) {
 			throw new ExtractException("Error parsing java", e);
 		}
 
