@@ -62,6 +62,7 @@ import com.gitplex.jsymbol.javascript.symbols.PropertySymbol;
 import com.gitplex.jsymbol.javascript.symbols.ReferenceSymbol;
 import com.gitplex.jsymbol.javascript.symbols.VariableSymbol;
 import com.google.common.collect.Lists;
+import com.sonar.sslr.api.RecognitionException;
 
 public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbol> {
 
@@ -70,7 +71,7 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 		List<JavaScriptSymbol> symbols = new ArrayList<>();
 		try {
 			collect(new JavaScriptParser(Charsets.UTF_8).parse(source), null, symbols);
-		} catch (Exception e) {
+		} catch (RecognitionException e) {
 			throw new ExtractException("Error parsing javascript", e);
 		}
 		Map<JavaScriptSymbol, Set<String>> containedDeclarations = new HashMap<>();
