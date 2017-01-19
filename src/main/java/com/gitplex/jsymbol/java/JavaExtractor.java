@@ -22,7 +22,6 @@ import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.body.TypeDeclaration;
 import com.github.javaparser.ast.body.VariableDeclarator;
-import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.TypeParameter;
 import com.gitplex.jsymbol.AbstractSymbolExtractor;
 import com.gitplex.jsymbol.ExtractException;
@@ -67,7 +66,6 @@ public class JavaExtractor extends AbstractSymbolExtractor<JavaSymbol> {
 	private void processTypeDeclaration(TypeDeclaration<?> typeDeclaration, JavaSymbol parent, List<JavaSymbol> symbols) {
 		TypeSymbol.Kind kind;
 		String typeParameters = null;
-		List<String> superTypeNames = new ArrayList<>();
 		if (typeDeclaration instanceof ClassOrInterfaceDeclaration) { 
 			ClassOrInterfaceDeclaration classOrInterfaceDeclaration = (ClassOrInterfaceDeclaration) typeDeclaration;
 			kind = classOrInterfaceDeclaration.isInterface()?Kind.INTERFACE:Kind.CLASS;
@@ -77,12 +75,6 @@ public class JavaExtractor extends AbstractSymbolExtractor<JavaSymbol> {
 			}
 			if (!listOfTypeParameterDesc.isEmpty()) {
 				typeParameters = "<" + Joiner.on(", ").join(listOfTypeParameterDesc) + ">";
-			}
-			for (ClassOrInterfaceType classOrInterfaceType: classOrInterfaceDeclaration.getExtendedTypes()) {
-				superTypeNames.add(classOrInterfaceType.getName().getIdentifier());
-			}
-			for (ClassOrInterfaceType classOrInterfaceType: classOrInterfaceDeclaration.getImplementedTypes()) {
-				superTypeNames.add(classOrInterfaceType.getName().getIdentifier());
 			}
 		} else if (typeDeclaration instanceof AnnotationDeclaration) {
 			kind = Kind.ANNOTATION;
@@ -94,7 +86,7 @@ public class JavaExtractor extends AbstractSymbolExtractor<JavaSymbol> {
 		
 		TypeSymbol symbol = new TypeSymbol(parent, typeDeclaration.getNameAsString(), 
 				getPosition(typeDeclaration.getName()), getPosition(typeDeclaration), kind, typeParameters, 
-				typeDeclaration.getModifiers(), superTypeNames);
+				typeDeclaration.getModifiers());
 		symbols.add(symbol);
 
 		for (Node child: typeDeclaration.getChildNodes()) {

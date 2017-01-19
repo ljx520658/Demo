@@ -1,7 +1,5 @@
 package com.gitplex.jsymbol.javascript.symbols;
 
-import java.util.ArrayList;
-
 import javax.annotation.Nullable;
 
 import com.gitplex.jsymbol.Symbol;
@@ -15,7 +13,7 @@ public abstract class JavaScriptSymbol extends Symbol {
 	
 	public JavaScriptSymbol(@Nullable Symbol parent, @Nullable String name, TokenPosition position, 
 			boolean local, boolean exported) {
-		super(parent, name, position, position, local, new ArrayList<>());
+		super(parent, name, position, position, local);
 		this.exported = exported;
 	}
 	

@@ -12,18 +12,15 @@ import com.gitplex.jsymbol.java.symbols.JavaSymbol;
 import com.gitplex.jsymbol.java.symbols.MethodSymbol;
 import com.gitplex.jsymbol.java.symbols.TypeSymbol;
 import com.gitplex.jsymbol.java.symbols.TypeSymbol.Kind;
-import com.google.common.base.Joiner;
 
 public class JavaExtractorTest extends DescribableExtractorTest<JavaSymbol> {
 
 	@Test
 	public void test() {
-		/*
 		verify(readFile("test.outline"), new JavaExtractor().extract(readFile("test.source")));
 		verify(readFile("composite.outline"), new JavaExtractor().extract(readFile("composite.source")));
 		verify(readFile("lcount.outline"), new JavaExtractor().extract(readFile("lcount.source")));
 		verify(readFile("resource.outline"), new JavaExtractor().extract(readFile("resource.source")));
-		*/
 	}
 
 	@Override
@@ -45,10 +42,6 @@ public class JavaExtractorTest extends DescribableExtractorTest<JavaSymbol> {
 			builder.append(typeDef.getName());
 			if (typeDef.getTypeParams() != null)
 				builder.append(typeDef.getTypeParams());
-			if (!typeDef.getSuperSymbolNames().isEmpty()) {
-				builder.append(" extends ");
-				builder.append(Joiner.on(",").join(typeDef.getSuperSymbolNames()));
-			}
 		} else if (symbol instanceof FieldSymbol) {
 			FieldSymbol fieldDef = (FieldSymbol) symbol;
 			for (Modifier modifier: fieldDef.getModifiers()) 

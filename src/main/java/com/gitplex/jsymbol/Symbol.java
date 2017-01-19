@@ -1,7 +1,6 @@
 package com.gitplex.jsymbol;
 
 import java.io.Serializable;
-import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -31,8 +30,6 @@ public abstract class Symbol implements Serializable {
 
 	private boolean local;
 	
-	private List<String> superSymbolNames;
-	
 	/**
 	 * Construct a symbol
 	 * 
@@ -51,13 +48,12 @@ public abstract class Symbol implements Serializable {
      * 			names of symbols this symbol is extended from
      */
 	public Symbol(@Nullable Symbol parent, @Nullable String name, @Nullable TokenPosition position, 
-			@Nullable TokenPosition scope, boolean local, List<String> superSymbolNames) {
+			@Nullable TokenPosition scope, boolean local) {
 		this.parent = parent;
 		this.name = name;
 		this.position = position;
 		this.scope = scope;
 		this.local = local;
-		this.superSymbolNames = superSymbolNames;
 	}
 	
 	@Nullable
@@ -139,14 +135,6 @@ public abstract class Symbol implements Serializable {
 
 	public void setScope(TokenPosition scope) {
 		this.scope = scope;
-	}
-
-	public List<String> getSuperSymbolNames() {
-		return superSymbolNames;
-	}
-
-	public void setSuperSymbolNames(List<String> superSymbolNames) {
-		this.superSymbolNames = superSymbolNames;
 	}
 
 	/**

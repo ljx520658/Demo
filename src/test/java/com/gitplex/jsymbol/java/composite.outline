@@ -16,10 +16,10 @@ package com.example {
   @interface MyAnotherAnn {
     String[] values()
   }
-  public class Test<K, V> extends HashMap {
-    private Map<String, String> map1
-    private Map<String, String> map2
-    private Map<String, String> map3
+  public class Test<@MyAnn(values = { "a" }) K, V> {
+    private Map<String, @MyAnotherAnn(values = { "value1", "value2" }) String> map1
+    private Map<String, @MyAnotherAnn(values = { "value1", "value2" }) String> map2
+    private Map<String, @MyAnotherAnn(values = { "value1", "value2" }) String> map3
     static final java.util.List<String> values
     static interface MyRunnable {
       void run(int, int)

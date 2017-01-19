@@ -1,6 +1,5 @@
 package com.gitplex.jsymbol.java.symbols;
 
-import java.util.ArrayList;
 import java.util.EnumSet;
 
 import javax.annotation.Nullable;
@@ -32,7 +31,7 @@ public class MethodSymbol extends JavaSymbol {
 	public MethodSymbol(TypeSymbol parent, String methodName, TokenPosition position, TokenPosition scope,
 			@Nullable String type, @Nullable String methodParams, @Nullable String typeParams, 
 			EnumSet<Modifier> modifiers) {
-		super(parent, methodName, position, scope, modifiers.contains(Modifier.PRIVATE), new ArrayList<>());
+		super(parent, methodName, position, scope, modifiers.contains(Modifier.PRIVATE));
 		
 		this.type = type;
 		this.methodParams = methodParams;

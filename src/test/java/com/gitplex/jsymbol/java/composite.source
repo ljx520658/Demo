@@ -63,7 +63,7 @@ enum MyEnum {
 }
 
 @SuppressWarnings("serial")
-public class Test<@MyAnn(values = { "a" }) K, V> extends HashMap<K, V> {
+public class Test<@MyAnn(values = { "a" }) K, V> {
 
 	@SuppressWarnings("unused")
 	private Map<String, @MyAnotherAnn(values = { "value1", "value2" }) String> map1 = 2 < 1 ? new HashMap<String, @MyAnotherAnn String>()

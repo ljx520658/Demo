@@ -1,7 +1,6 @@
 package com.gitplex.jsymbol.java.symbols;
 
 import java.util.EnumSet;
-import java.util.List;
 
 import javax.annotation.Nullable;
 
@@ -31,8 +30,8 @@ public class TypeSymbol extends JavaSymbol {
 	private final EnumSet<Modifier> modifiers;
 
 	public TypeSymbol(@Nullable Symbol parent, String typeName, TokenPosition position, TokenPosition scope,
-			Kind kind, @Nullable String typeParams, EnumSet<Modifier> modifiers, List<String> superTypeNames) {
-		super(parent, typeName, position, scope, modifiers.contains(Modifier.PRIVATE), superTypeNames);
+			Kind kind, @Nullable String typeParams, EnumSet<Modifier> modifiers) {
+		super(parent, typeName, position, scope, modifiers.contains(Modifier.PRIVATE));
 
 		this.kind = kind;
 		this.typeParams = typeParams;

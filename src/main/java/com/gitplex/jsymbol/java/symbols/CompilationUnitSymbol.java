@@ -1,7 +1,5 @@
 package com.gitplex.jsymbol.java.symbols;
 
-import java.util.ArrayList;
-
 import org.apache.wicket.Component;
 import org.apache.wicket.behavior.AttributeAppender;
 import org.apache.wicket.markup.html.basic.Label;
@@ -18,7 +16,7 @@ public class CompilationUnitSymbol extends JavaSymbol {
 	private static final long serialVersionUID = 1L;
 	
 	public CompilationUnitSymbol(String packageName, TokenPosition position, TokenPosition scope) {
-		super(null, packageName, position, scope, false, new ArrayList<>());
+		super(null, packageName, position, scope, false);
 	}
 	
 	@Override

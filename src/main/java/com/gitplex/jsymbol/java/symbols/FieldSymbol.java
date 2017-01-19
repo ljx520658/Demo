@@ -1,6 +1,5 @@
 package com.gitplex.jsymbol.java.symbols;
 
-import java.util.ArrayList;
 import java.util.EnumSet;
 
 import javax.annotation.Nullable;
@@ -27,7 +26,7 @@ public class FieldSymbol extends JavaSymbol {
 	
 	public FieldSymbol(TypeSymbol parent, String fieldName, TokenPosition position, TokenPosition scope, 
 			@Nullable String type, EnumSet<Modifier> modifiers) {
-		super(parent, fieldName, position, scope, modifiers.contains(Modifier.PRIVATE), new ArrayList<>());
+		super(parent, fieldName, position, scope, modifiers.contains(Modifier.PRIVATE));
 		
 		this.type = type;
 		this.modifiers = modifiers;
