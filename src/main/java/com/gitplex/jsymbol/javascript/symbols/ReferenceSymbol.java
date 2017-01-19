@@ -78,6 +78,16 @@ public class ReferenceSymbol extends JavaScriptSymbol {
                 iconFile = "exported_object.png";
                 tooltip = "exported object";
             }
+		} else if (isLocal()) {
+            if (object != null) { 
+            	// property can always be accessed outside of the scope, so we 
+            	// do not display it as local here
+                iconFile = "property.png";
+                tooltip = "property";
+            } else {
+                iconFile = "local_object.png";
+                tooltip = "local object";
+            }
 		} else {
 			if (object != null) {
 				iconFile = "property.png";

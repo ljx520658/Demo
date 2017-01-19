@@ -1,7 +1,10 @@
 function test() {
-  export person
-  export hello.world
-  local function inner2() {
-    exports
+  local function inner1()
+  local function inner2()
+  local var person {
+    name
   }
 }
+export person
+export hello.world
+exports

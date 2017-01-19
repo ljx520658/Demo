@@ -5,10 +5,12 @@ class Polygon {
     this.width
   }
   test() {
+    local class Inner1 {
+      method1()
+    }
     local class Inner2 {
-      method2() {
-        module.exports
-      }
+      method2()
     }
   }
 }
+module.exports

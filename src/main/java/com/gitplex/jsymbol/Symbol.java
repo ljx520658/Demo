@@ -43,7 +43,7 @@ public abstract class Symbol implements Serializable {
 	 * 			scope of the symbol in source file, for instance a method scope covers the method body. 
 	 * 			Use <tt>null</tt> if scope is unknown 
      * @param local
-     * 			whether or not this is a local symbol which can not be accessed from other files
+     * 			a local symbol can not be accessed out side of the namespace
      * @param superSymbolNames
      * 			names of symbols this symbol is extended from
      */
@@ -93,7 +93,7 @@ public abstract class Symbol implements Serializable {
 	}
 
     /**
-     * whether or not this is a local symbol which can not be accessed from other files
+     * whether or not this symbol is local to its namespace
      * @return
      *          whether or not the symbol is local
      */
@@ -101,7 +101,7 @@ public abstract class Symbol implements Serializable {
         return local;
     }
     
-    public boolean isEffectivelyLocal() {
+    public boolean isLocalInHierarchy() {
     	Symbol current = this;
     	do {
     		if (current.isLocal())
