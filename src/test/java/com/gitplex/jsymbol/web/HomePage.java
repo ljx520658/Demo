@@ -181,7 +181,7 @@ public class HomePage extends WebPage {
 	private List<Symbol> getChildSymbols(@Nullable Symbol parentSymbol) {
 		List<Symbol> children = new ArrayList<>();
 		for (Symbol symbol: symbols) {
-			if (symbol.getParent() == parentSymbol)
+			if (symbol.getOutlineParent() == parentSymbol)
 				children.add(symbol);
 		}
 		return children;

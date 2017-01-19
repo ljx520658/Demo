@@ -27,6 +27,11 @@ public class CompilationUnitSymbol extends JavaSymbol {
 	}
 
 	@Override
+	public boolean isPassthroughInOutline() {
+		return true;
+	}
+
+	@Override
 	public boolean isPrimary() {
 		return false;
 	}

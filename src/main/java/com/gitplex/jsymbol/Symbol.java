@@ -60,8 +60,21 @@ public abstract class Symbol implements Serializable {
 		this.superSymbolNames = superSymbolNames;
 	}
 	
+	@Nullable
 	public Symbol getParent() {
 		return parent;
+	}
+	
+	public Symbol getOutlineParent() {
+		Symbol parent = getParent();
+		while (parent != null && parent.isPassthroughInOutline()) {
+			parent = parent.getParent();
+		}
+		return parent;
+	}
+	
+	public boolean isPassthroughInOutline() {
+		return false;
 	}
 
 	/**
