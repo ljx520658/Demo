@@ -9,11 +9,10 @@ import com.gitplex.jsymbol.SymbolExtractor;
 import com.gitplex.jsymbol.javascript.symbols.ClassSymbol;
 import com.gitplex.jsymbol.javascript.symbols.FunctionSymbol;
 import com.gitplex.jsymbol.javascript.symbols.JavaScriptSymbol;
-import com.gitplex.jsymbol.javascript.symbols.MethodAccessorType;
+import com.gitplex.jsymbol.javascript.symbols.MethodAccess;
 import com.gitplex.jsymbol.javascript.symbols.MethodSymbol;
-import com.gitplex.jsymbol.javascript.symbols.PropertySymbol;
-import com.gitplex.jsymbol.javascript.symbols.ReferenceSymbol;
-import com.gitplex.jsymbol.javascript.symbols.VariableSymbol;
+import com.gitplex.jsymbol.javascript.symbols.ModuleAccess;
+import com.gitplex.jsymbol.javascript.symbols.ObjectSymbol;
 
 public class JavaScriptExtractorTest extends DescribableExtractorTest<JavaScriptSymbol> {
 
@@ -32,41 +31,30 @@ public class JavaScriptExtractorTest extends DescribableExtractorTest<JavaScript
 	@Override
 	protected String describe(List<JavaScriptSymbol> context, JavaScriptSymbol symbol) {
 		StringBuilder builder = new StringBuilder();
-		if (symbol.isExported())
+		if (symbol.getModuleAccess() == ModuleAccess.EXPORT)
 			builder.append("export ");
 		if (symbol.isLocal())
 		    builder.append("local ");
-		if (symbol instanceof VariableSymbol) {
-			VariableSymbol variable = (VariableSymbol) symbol;
-			builder.append("var ").append(variable.getName());
-		} else if (symbol instanceof ReferenceSymbol) {
-			ReferenceSymbol referenceSymbol = (ReferenceSymbol) symbol;
-			if (referenceSymbol.getObject() != null)
-				builder.append(referenceSymbol.getObject()).append(".").append(referenceSymbol.getName());
-			else
-				builder.append(referenceSymbol.getName());
-		} else if (symbol instanceof PropertySymbol) {
-			PropertySymbol propertySymbol = (PropertySymbol) symbol;
-			builder.append(propertySymbol.getName());
-		} else if (symbol instanceof MethodSymbol) {
+		if (symbol instanceof MethodSymbol) {
 			MethodSymbol methodSymbol = (MethodSymbol) symbol;
-			if (methodSymbol.getAccessorType() == MethodAccessorType.GET)
-				builder.append("get ").append(methodSymbol.getName()).append(methodSymbol.getParams());
-			else if (methodSymbol.getAccessorType() == MethodAccessorType.SET)
-				builder.append("set ").append(methodSymbol.getName()).append(methodSymbol.getParams());
+			if (methodSymbol.getMethodAccess() == MethodAccess.GET)
+				builder.append("get ").append(methodSymbol.getName()).append(methodSymbol.getParameters());
+			else if (methodSymbol.getMethodAccess() == MethodAccess.SET)
+				builder.append("set ").append(methodSymbol.getName()).append(methodSymbol.getParameters());
 			else
-				builder.append(methodSymbol.getName()).append(methodSymbol.getParams());
+				builder.append(methodSymbol.getName()).append(methodSymbol.getParameters());
 		} else if (symbol instanceof FunctionSymbol) {
 			FunctionSymbol functionSymbol = (FunctionSymbol) symbol;
 			if (functionSymbol.getName() != null)
-				builder.append("function ").append(functionSymbol.getName()).append(functionSymbol.getParams());
+				builder.append("function ").append(functionSymbol.getName()).append(functionSymbol.getParameters());
 			else
-				builder.append("function").append(functionSymbol.getParams());
+				builder.append("function").append(functionSymbol.getParameters());
 		} else if (symbol instanceof ClassSymbol) {
 			ClassSymbol classSymbol = (ClassSymbol) symbol;
 			builder.append("class ").append(classSymbol.getName());
 		} else {
-			throw new RuntimeException("Unrecognized symbol class: " + symbol.getClass());
+			ObjectSymbol object = (ObjectSymbol) symbol;
+			builder.append(object.getName());
 		}
 		appendChildren(builder, context, symbol);
 		return builder.toString();

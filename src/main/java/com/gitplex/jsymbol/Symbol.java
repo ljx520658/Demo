@@ -20,46 +20,67 @@ public abstract class Symbol implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 
-	private Symbol parent;
-	
-	private String name;
-	
-	private TokenPosition position;
-	
-	private TokenPosition scope;
-
-	private boolean local;
+	@Nullable
+	public abstract Symbol getParent();
 	
 	/**
-	 * Construct a symbol
+	 * Get name of this symbol.
 	 * 
-	 * @param parent
-	 * 			parent symbol, use <tt>null</tt> if there is no parent 
-	 * @param name
-	 * 			name of the symbol. Use <tt>null</tt> if the symbol does not have a name
-	 * @param position
-	 * 			position of the symbol name in source file. Use <tt>null</tt> if position is unknown
-	 * @param scope
-	 * 			scope of the symbol in source file, for instance a method scope covers the method body. 
-	 * 			Use <tt>null</tt> if scope is unknown 
-     * @param local
-     * 			a local symbol can not be accessed out side of the namespace
-     * @param superSymbolNames
-     * 			names of symbols this symbol is extended from
+	 * @return
+	 * 			name of this symbol for indexing, or <tt>null</tt> if this symbol 
+	 * 			does not need to be indexed
+	 */
+	@Nullable
+	public abstract String getName();
+	
+	public boolean isPassthroughInOutline() {
+		return false;
+	}
+
+	@Nullable
+	public abstract TokenPosition getPosition();
+
+    @Nullable
+    public abstract TokenPosition getScope();
+    
+    /**
+     * whether or not this symbol is local to its namespace
+     * @return
+     *          whether or not the symbol is local
      */
-	public Symbol(@Nullable Symbol parent, @Nullable String name, @Nullable TokenPosition position, 
-			@Nullable TokenPosition scope, boolean local) {
-		this.parent = parent;
-		this.name = name;
-		this.position = position;
-		this.scope = scope;
-		this.local = local;
+    public abstract boolean isLocal();
+    
+	/**
+	 * Whether or not this symbol is a primary symbol. Primary symbol will be searched 
+	 * before non-primary symbols. For instance, a Java symbol search will match 
+	 * against type symbols (class, enumeration, interface, annotation etc.) first 
+	 * before matching other symbols such as fields and methods.
+	 * 
+	 * @return
+	 * 			whether or not this symbol is primary
+	 */
+	public abstract boolean isPrimary();
+
+	public boolean isSearchable() {
+		return true;
 	}
 	
-	@Nullable
-	public Symbol getParent() {
-		return parent;
-	}
+	public abstract Image renderIcon(String componentId);
+	
+	/**
+	 * Render the symbol in web UI
+	 * 
+	 * @param componentId
+	 * 			wicket component id corresponding to this symbol
+	 * @param highlight
+	 * 			range of the name to be highlighted if not <tt>null</tt>. For instance, 
+	 * 			when user searches for a symbol, this range will be used to highlight
+	 * 			the matched search in the symbol name
+	 * 			
+	 * @return
+	 * 			a wicket component to be displayed in web UI for the symbol
+	 */
+	public abstract Component render(String componentId, @Nullable Range highlight);
 	
 	public Symbol getOutlineParent() {
 		Symbol parent = getParent();
@@ -69,38 +90,6 @@ public abstract class Symbol implements Serializable {
 		return parent;
 	}
 	
-	public boolean isPassthroughInOutline() {
-		return false;
-	}
-
-	/**
-	 * Get name of this symbol.
-	 * 
-	 * @return
-	 * 			name of this symbol for indexing, or <tt>null</tt> if this symbol 
-	 * 			does not need to be indexed
-	 */
-	@Nullable
-	public String getName() {
-		return name;
-	}
-	
-	public abstract Image renderIcon(String componentId);
-	
-	@Nullable
-	public TokenPosition getPosition() {
-		return position;
-	}
-
-    /**
-     * whether or not this symbol is local to its namespace
-     * @return
-     *          whether or not the symbol is local
-     */
-    public boolean isLocal() {
-        return local;
-    }
-    
     public boolean isLocalInHierarchy() {
     	Symbol current = this;
     	do {
@@ -111,31 +100,6 @@ public abstract class Symbol implements Serializable {
     	
     	return false;
     }
-
-    public void setParent(Symbol parent) {
-        this.parent = parent;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setPosition(TokenPosition position) {
-        this.position = position;
-    }
-
-    public void setLocal(boolean local) {
-        this.local = local;
-    }
-
-    @Nullable
-    public TokenPosition getScope() {
-		return scope;
-	}
-
-	public void setScope(TokenPosition scope) {
-		this.scope = scope;
-	}
 
 	/**
 	 * Get namespace of the symbol
@@ -160,35 +124,5 @@ public abstract class Symbol implements Serializable {
 		}
 		return scope;
 	}
-	
-	/**
-	 * Whether or not this symbol is a primary symbol. Primary symbol will be searched 
-	 * before non-primary symbols. For instance, a Java symbol search will match 
-	 * against type symbols (class, enumeration, interface, annotation etc.) first 
-	 * before matching other symbols such as fields and methods.
-	 * 
-	 * @return
-	 * 			whether or not this symbol is primary
-	 */
-	public abstract boolean isPrimary();
-
-	public boolean isSearchable() {
-		return true;
-	}
-	
-	/**
-	 * Render the symbol in web UI
-	 * 
-	 * @param componentId
-	 * 			wicket component id corresponding to this symbol
-	 * @param highlight
-	 * 			range of the name to be highlighted if not <tt>null</tt>. For instance, 
-	 * 			when user searches for a symbol, this range will be used to highlight
-	 * 			the matched search in the symbol name
-	 * 			
-	 * @return
-	 * 			a wicket component to be displayed in web UI for the symbol
-	 */
-	public abstract Component render(String componentId, @Nullable Range highlight);
 	
 }

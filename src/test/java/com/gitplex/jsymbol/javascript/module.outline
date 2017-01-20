@@ -1,11 +1,14 @@
-local var person
-local var people
-local var person
-export var person
-export var person
-export var test {
-  this.name
+local person
+local people
+local person
+export person
+export function test() {
+  local this {
+    name
+  }
 }
 export function test() {
-  this.name
+  local this {
+    name
+  }
 }

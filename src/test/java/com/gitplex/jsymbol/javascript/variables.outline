@@ -1,10 +1,12 @@
+module {
+  exports
+}
+exports
 function test() {
-  local function inner1()
-  local function inner2()
-  local var person {
+  export person {
+    age
     name
   }
+  local function inner1()
+  local function inner2()
 }
-export person
-export hello.world
-exports

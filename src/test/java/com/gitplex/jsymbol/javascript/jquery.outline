@@ -1,2 +1,7 @@
-function($)
-$.fn.greenify
+function($) {
+  local $ {
+    fn {
+      function greenify()
+    }
+  }
+}

@@ -1,5 +1,6 @@
-local var foo
-var bar
+local foo
 local bar
-exports.app
-exports.foo
+exports {
+  export function app()
+  export function foo()
+}

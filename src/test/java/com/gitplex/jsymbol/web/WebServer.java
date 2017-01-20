@@ -9,6 +9,7 @@ import org.eclipse.jetty.webapp.WebAppContext;
 public class WebServer {
 	public static void main(String[] args) {
 		System.setProperty("wicket.configuration", "development");
+		System.setProperty("org.eclipse.jetty.server.Request.maxFormContentSize", "5000000");		
 
 		Server server = new Server();
 

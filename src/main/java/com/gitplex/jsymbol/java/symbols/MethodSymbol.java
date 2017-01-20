@@ -31,7 +31,7 @@ public class MethodSymbol extends JavaSymbol {
 	public MethodSymbol(TypeSymbol parent, String methodName, TokenPosition position, TokenPosition scope,
 			@Nullable String type, @Nullable String methodParams, @Nullable String typeParams, 
 			EnumSet<Modifier> modifiers) {
-		super(parent, methodName, position, scope, modifiers.contains(Modifier.PRIVATE));
+		super(parent, methodName, position, scope);
 		
 		this.type = type;
 		this.methodParams = methodParams;
@@ -103,6 +103,11 @@ public class MethodSymbol extends JavaSymbol {
 			icon.add(AttributeAppender.append("title", "method"));
 		}
 		return icon;
+	}
+
+	@Override
+	public boolean isLocal() {
+		return modifiers.contains(Modifier.PRIVATE);
 	}
 	
 }

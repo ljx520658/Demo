@@ -1,13 +1,18 @@
-var Parent {
+Parent
+null {
   template
   components {
     my-component
   }
 }
-export child {
-  props
-  template
+vueComponents {
+  export child {
+    props
+    template
+  }
 }
-components {
-  my-component
+null {
+  components {
+    my-component
+  }
 }

@@ -1,8 +1,13 @@
+module {
+  exports
+}
 class Polygon {
   constructor(height, width) {
-    this.name
-    this.height
-    this.width
+    local this {
+      name
+      height
+      width
+    }
   }
   test() {
     local class Inner1 {
@@ -13,4 +18,3 @@ class Polygon {
     }
   }
 }
-module.exports

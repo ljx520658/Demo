@@ -33,7 +33,7 @@ public class FunctionSymbolPanel extends Panel {
 		else
 			add(new WebMarkupContainer("name").setVisible(false));
 		
-		add(new Label("params", symbol.getParams()));
+		add(new Label("params", symbol.getParameters()));
 	}
 
 }

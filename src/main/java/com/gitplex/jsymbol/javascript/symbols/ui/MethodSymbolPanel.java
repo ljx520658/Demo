@@ -5,7 +5,7 @@ import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.markup.html.panel.Panel;
 
 import com.gitplex.jsymbol.Range;
-import com.gitplex.jsymbol.javascript.symbols.MethodAccessorType;
+import com.gitplex.jsymbol.javascript.symbols.MethodAccess;
 import com.gitplex.jsymbol.javascript.symbols.MethodSymbol;
 import com.gitplex.jsymbol.util.HighlightableLabel;
 
@@ -26,9 +26,9 @@ public class MethodSymbolPanel extends Panel {
 	protected void onInitialize() {
 		super.onInitialize();
 		
-		if (symbol.getAccessorType() == MethodAccessorType.GET)
+		if (symbol.getMethodAccess() == MethodAccess.GET)
 			add(new Label("accessor", "get"));
-		else if (symbol.getAccessorType() == MethodAccessorType.SET)
+		else if (symbol.getMethodAccess() == MethodAccess.SET)
 			add(new Label("accessor", "set"));
 		else
 			add(new WebMarkupContainer("accessor").setVisible(false));
@@ -38,7 +38,7 @@ public class MethodSymbolPanel extends Panel {
 		 */
 		add(new HighlightableLabel("name", symbol.getName(), highlight));
 		
-		add(new Label("params", symbol.getParams()));
+		add(new Label("params", symbol.getParameters()));
 	}
 
 }

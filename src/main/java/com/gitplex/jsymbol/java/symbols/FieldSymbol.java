@@ -26,7 +26,7 @@ public class FieldSymbol extends JavaSymbol {
 	
 	public FieldSymbol(TypeSymbol parent, String fieldName, TokenPosition position, TokenPosition scope, 
 			@Nullable String type, EnumSet<Modifier> modifiers) {
-		super(parent, fieldName, position, scope, modifiers.contains(Modifier.PRIVATE));
+		super(parent, fieldName, position, scope);
 		
 		this.type = type;
 		this.modifiers = modifiers;
@@ -74,6 +74,11 @@ public class FieldSymbol extends JavaSymbol {
 			icon.add(AttributeAppender.append("title", "field"));
 		}
 		return icon;
+	}
+
+	@Override
+	public boolean isLocal() {
+		return modifiers.contains(Modifier.PRIVATE);
 	}
 
 }

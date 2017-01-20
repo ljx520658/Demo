@@ -16,24 +16,9 @@ public class CompilationUnitSymbol extends JavaSymbol {
 	private static final long serialVersionUID = 1L;
 	
 	public CompilationUnitSymbol(String packageName, TokenPosition position, TokenPosition scope) {
-		super(null, packageName, position, scope, false);
+		super(null, packageName, position, scope);
 	}
 	
-	@Override
-	public boolean isSearchable() {
-		return false;
-	}
-
-	@Override
-	public boolean isPassthroughInOutline() {
-		return true;
-	}
-
-	@Override
-	public boolean isPrimary() {
-		return false;
-	}
-
 	@Override
 	public Component render(String componentId, Range highlight) {
 		return new Label(componentId, getName());
@@ -44,6 +29,26 @@ public class CompilationUnitSymbol extends JavaSymbol {
 		Image icon = new NoAntiCacheImage("icon", new PackageResourceReference(IconLocator.class, "package_obj.png"));
 		icon.add(AttributeAppender.append("title", "package"));
 		return icon;
+	}
+
+	@Override
+	public boolean isPassthroughInOutline() {
+		return true;
+	}
+
+	@Override
+	public boolean isLocal() {
+		return false;
+	}
+
+	@Override
+	public boolean isPrimary() {
+		return false;
+	}
+
+	@Override
+	public boolean isSearchable() {
+		return false;
 	}
 
 }

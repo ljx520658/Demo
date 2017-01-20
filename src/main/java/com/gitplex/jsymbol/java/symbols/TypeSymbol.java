@@ -11,7 +11,6 @@ import org.apache.wicket.request.resource.PackageResourceReference;
 
 import com.github.javaparser.ast.Modifier;
 import com.gitplex.jsymbol.Range;
-import com.gitplex.jsymbol.Symbol;
 import com.gitplex.jsymbol.TokenPosition;
 import com.gitplex.jsymbol.java.symbols.ui.TypeDefPanel;
 import com.gitplex.jsymbol.java.symbols.ui.icon.IconLocator;
@@ -29,9 +28,9 @@ public class TypeSymbol extends JavaSymbol {
 	
 	private final EnumSet<Modifier> modifiers;
 
-	public TypeSymbol(@Nullable Symbol parent, String typeName, TokenPosition position, TokenPosition scope,
+	public TypeSymbol(@Nullable JavaSymbol parent, String typeName, TokenPosition position, TokenPosition scope,
 			Kind kind, @Nullable String typeParams, EnumSet<Modifier> modifiers) {
-		super(parent, typeName, position, scope, modifiers.contains(Modifier.PRIVATE));
+		super(parent, typeName, position, scope);
 
 		this.kind = kind;
 		this.typeParams = typeParams;
@@ -48,11 +47,6 @@ public class TypeSymbol extends JavaSymbol {
 
 	public EnumSet<Modifier> getModifiers() {
 		return modifiers;
-	}
-
-	@Override
-	public boolean isPrimary() {
-		return true;
 	}
 
 	@Override
@@ -90,6 +84,16 @@ public class TypeSymbol extends JavaSymbol {
 			throw new RuntimeException("Unrecognized type: " + kind);
 		}
 		return icon;
+	}
+
+	@Override
+	public boolean isLocal() {
+		return modifiers.contains(Modifier.PRIVATE);
+	}
+
+	@Override
+	public boolean isPrimary() {
+		return true;
 	}
 
 }
