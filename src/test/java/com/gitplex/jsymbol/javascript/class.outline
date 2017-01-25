@@ -3,7 +3,7 @@ module {
 }
 class Polygon {
   constructor(height, width) {
-    local this {
+    this {
       name
       height
       width

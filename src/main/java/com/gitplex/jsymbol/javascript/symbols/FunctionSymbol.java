@@ -10,6 +10,11 @@ import com.gitplex.jsymbol.javascript.symbols.ui.FunctionSymbolPanel;
 import com.gitplex.jsymbol.javascript.symbols.ui.icon.IconLocator;
 import com.gitplex.jsymbol.util.NoAntiCacheImage;
 
+/**
+ * Represents a function declaration
+ * @author robin
+ *
+ */
 public class FunctionSymbol extends JavaScriptSymbol {
 
 	private static final long serialVersionUID = 1L;

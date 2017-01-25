@@ -11,6 +11,12 @@ import com.gitplex.jsymbol.TokenPosition;
 import com.gitplex.jsymbol.java.symbols.ui.icon.IconLocator;
 import com.gitplex.jsymbol.util.NoAntiCacheImage;
 
+/**
+ * This symbol represents a Java package
+ *  
+ * @author robin
+ *
+ */
 public class CompilationUnitSymbol extends JavaSymbol {
 	
 	private static final long serialVersionUID = 1L;

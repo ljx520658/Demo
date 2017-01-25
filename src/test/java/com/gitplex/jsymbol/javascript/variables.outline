@@ -4,8 +4,8 @@ module {
 exports
 function test() {
   export person {
-    age
     name
+    age
   }
   local function inner1()
   local function inner2()

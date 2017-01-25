@@ -95,7 +95,10 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 				}
 			}
 		}
-		
+
+		/*
+		 * Remove all symbols not contributing substantial information to outline
+		 */
 		for (Iterator<JavaScriptSymbol> it = symbols.iterator(); it.hasNext();) {
 			JavaScriptSymbol symbol = it.next();
 			if (symbol.getName() == null && getChildren(symbols, symbol).isEmpty() 
@@ -199,7 +202,6 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 			}
 			for (IdentifierTree identifier: identifiers) {
 				ObjectSymbol symbol = new ObjectSymbol();
-				symbol.setDeclared(true);
 				symbol.setName(getName(identifier));
 				symbol.setParent(parent);
 				symbol.setPosition(getPosition(identifier));
@@ -230,7 +232,6 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 			    symbol.setName(getName(token));
 	            symbol.setModuleAccess(ModuleAccess.IMPORT);
 			    symbol.setPosition(getPosition(token));
-			    symbol.setDeclared(true);
 			    symbols.add(symbol);
 			}
 		}
@@ -248,7 +249,6 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
         if (token != null) {
             ObjectSymbol symbol = new ObjectSymbol();
             symbol.setName(getName(token));
-            symbol.setDeclared(true);
             symbol.setModuleAccess(moduleAccess);
             symbol.setPosition(getPosition(token));
             symbols.add(symbol);
@@ -308,7 +308,6 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 		FunctionSymbol symbol = new FunctionSymbol();
 		symbol.setParent(parent);
 		symbol.setName(getName(identifier));
-		symbol.setDeclared(true);
 		symbol.setPosition(getPosition(identifier));
 		symbol.setParameters(processParameters(function.parameterList(), symbol, symbols));
 		if (function.body() instanceof BlockTree) {
@@ -338,14 +337,7 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 		} else if (statement instanceof ExpressionStatementTree) {
 			Tree expression = ((ExpressionStatementTree)statement).expression();
 			if (expression instanceof ExpressionTree) {
-				JavaScriptSymbol symbol = processExpression((ExpressionTree) expression, parent, symbols);
-				if (symbol != null) {
-					if (symbol.getName() != null) {
-						replaceWith(symbols, symbol);
-					} else {
-						symbols.add(symbol);
-					}
-				}
+				processExpression((ExpressionTree) expression, parent, symbols);
 			}
 		} else if (statement instanceof BlockTree) {
 			processBlock((BlockTree)statement, parent, symbols);
@@ -353,34 +345,11 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 			processClassTree((ClassTree) statement, parent, symbols);
 		}
 	}
-	
-	private void replaceWith(List<JavaScriptSymbol> symbols, JavaScriptSymbol symbol) {
-		JavaScriptSymbol existing;
-		boolean property;
-		if (!symbol.isLocal() && symbol.getParent() != null) {
-			existing = getChild(symbols, (JavaScriptSymbol) symbol.getParent(), symbol.getName());
-			property = true;
-		} else {
-			existing = getSymbolInHierarchy(symbols, (JavaScriptSymbol) symbol.getParent(), 
-					symbol.getName());
-			property = false;
-		}
-		if (existing != null) {
-			symbol.setParent(existing.getParent());
-			symbol.setDeclared(existing.isDeclared());
-			symbol.setPosition(existing.getPosition());
-			symbols.remove(existing);
-		} else if (!property) {
-			symbol.setParent(null);
-		}
-		symbols.add(symbol);
-	}
-	
+		
 	private JavaScriptSymbol processClassTree(ClassTree classTree, JavaScriptSymbol parent, 
 			List<JavaScriptSymbol> symbols) {
 		ClassSymbol symbol = new ClassSymbol();
 		symbol.setParent(parent);
-		symbol.setDeclared(true);
 		symbol.setName(getName(classTree.name()));
 		symbol.setPosition(getPosition(classTree.name()));
 		symbol.setScope(getPosition(classTree.openCurlyBraceToken(), classTree.closeCurlyBraceToken()));
@@ -403,7 +372,6 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 			symbol.setParent(parent);
 			symbol.setName(getName(identifier));
 			symbol.setPosition(getPosition(identifier));
-			symbol.setDeclared(true);
 			symbols.add(symbol);
 			
 			if (bindingElement instanceof InitializedBindingElementTree) {
@@ -416,12 +384,38 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 		}
 		return binded;
 	}
-	
+
+	/**
+	 * Assign specified symbol to evaluation result of specified expression. Considering below code:
+	 * <pre><code>
+	 * var f = function() {};
+	 * </code></pre>
+	 * Here <i>f</i> is the symbol to be assigned, and <i>function() {}</i> is another symbol representing the 
+	 * expression evaluation result. The function symbol will replace symbol <i>f</i>, but some attributes will be 
+	 * taken from <i>f</i>, including name, parent, position, etc. Note that our logic will override name of 
+	 * expression symbols, so symbol _g_ will be missing for below code:
+	 * <pre><code>
+	 * var f=g=function() {};
+	 * </pre></code>
+	 * We do not handle these cases as our extractor is designed to only handle common cases. It does not try to and 
+	 * is not possible to capture all declarations accurately for a dynamic language
+	 * 
+	 * @param expressionTree 
+	 * 			the expression to be evaluated
+	 * @param parent
+	 * 			parent symbol to be used when evaluate the expression
+	 * @param symbol
+	 * 			symbol to be assigned
+	 * @param symbols
+	 * 			context of symbol
+	 * 
+	 * @return
+	 * 			result of assignment 			
+	 */
 	private JavaScriptSymbol assignSymbol(ExpressionTree expressionTree, JavaScriptSymbol parent, 
 			JavaScriptSymbol symbol, List<JavaScriptSymbol> symbols) {
 		JavaScriptSymbol expression = processExpression(expressionTree, parent, symbols);
 		if (expression != null) {
-			expression.setDeclared(symbol.isDeclared());
 			if (symbol.getModuleAccess() != ModuleAccess.NORMAL) 
 				expression.setModuleAccess(symbol.getModuleAccess());
 			expression.setName(symbol.getName());
@@ -429,6 +423,8 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 			expression.setPosition(symbol.getPosition());
 			expression.setProperty(symbol.isProperty());
 				
+			// we will be using the expression symbol carrying more detailed information, so let's remove the original 
+			// one
 			symbols.remove(symbol);
 			return expression;
 		} else {
@@ -436,6 +432,10 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 		}
 	}
 	
+	/**
+	 * Create a faked symbol to group all discovered vue components, as otherwise discovered vue components may have 
+	 * name collisions with other symbols if we put them in global namespace
+	 */
 	private JavaScriptSymbol getVueComponents(List<JavaScriptSymbol> symbols) {
 		String name = "vueComponents";
 		JavaScriptSymbol vueComponents = getChild(symbols, null, name);
@@ -448,8 +448,15 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 		return vueComponents;
 	}
 	
+	/*
+	 * Process specified expression and return a symbol representing the expression. Return <tt>null</tt> if the 
+	 * expression does not represent a declared structure such as class, function, literal object, etc. For instance 
+	 * expression <i>1+1</i> does not represent any static structures and will return <tt>null</tt>
+	 * 
+	 */
 	@Nullable
-	private JavaScriptSymbol processExpression(ExpressionTree expression, JavaScriptSymbol parent, List<JavaScriptSymbol> symbols) {
+	private JavaScriptSymbol processExpression(ExpressionTree expression, JavaScriptSymbol parent, 
+			List<JavaScriptSymbol> symbols) {
 		if (expression instanceof AssignmentExpressionTree) {
 			return processAssignmentExpression((AssignmentExpressionTree)expression, parent, symbols);
 		} else if (expression instanceof ObjectLiteralTree) {
@@ -462,6 +469,7 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 			if (newExpression.arguments() != null) {
 				for (Tree parameter: newExpression.arguments().parameters()) {
 					if (parameter instanceof ExpressionTree) {
+						// parameter may contain interesting structures, let's dig into it
 						processExpression((ExpressionTree)parameter, parent, symbols);
 					} 
 				}
@@ -506,16 +514,19 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 					&& StringUtils.deleteWhitespace(callExpression.callee().toString()).equals("Vue.extend") 
 					&& !callExpression.arguments().parameters().isEmpty()) {
 				if (callExpression.arguments().parameters().get(0) instanceof ExpressionTree) {
+					// parameter may contain interesting structures, let's dig into it
 					processExpression((ExpressionTree)callExpression.arguments().parameters().get(0), 
 							parent, symbols);
 				}
 				return null;
 			} 
 			
+			// callee may contain interesting structures, let's dig into it
 			processExpression(callExpression.callee(), parent, symbols);
 			
 			for (Tree parameter: callExpression.arguments().parameters()) {
 				if (parameter instanceof ExpressionTree) {
+					// parameter may contain interesting structures, let's dig into it
 					processExpression((ExpressionTree)parameter, parent, symbols);
 				} 
 			}
@@ -584,6 +595,9 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 		return symbol;
 	}
 	
+	/*
+	 * Recursively find declared symbols in specified parent and all its ancestors
+	 */
 	@Nullable
 	private JavaScriptSymbol getSymbolInHierarchy(List<JavaScriptSymbol> symbols, @Nullable JavaScriptSymbol parent, 
 			String symbolName) {
@@ -605,9 +619,14 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 			if (!identifierPath.isEmpty()) {
 				IdentifierTree identifier = identifierPath.get(0);
 				JavaScriptSymbol symbol;
-				
+
+				/* 
+				 * Find root symbol of a property path. Root symbol is the symbol representing first encountered 
+				 * identifier in a identifier path. For instance root symbol of "person.name" is "person"
+				 */
 				boolean isThis = getName(identifier).equals("this");
 				if (isThis) {
+					// in case of the special "this" symbol, we always locate it inside current parent
 					symbol = getChild(symbols, parent, getName(identifier));
 				} else {
 					symbol = getSymbolInHierarchy(symbols, parent, getName(identifier));
@@ -622,6 +641,9 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 					symbols.add(symbol);
 				}
 				
+				/*
+				 * Then we iterate over all subsequent identifiers to find the child symbol under root symbol
+				 */
 				for (int i=1; i<identifierPath.size(); i++) {
 					identifier = identifierPath.get(i);
 					JavaScriptSymbol child = getChild(symbols, symbol, getName(identifier));

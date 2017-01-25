@@ -11,6 +11,12 @@ import com.gitplex.jsymbol.javascript.symbols.ui.icon.IconLocator;
 import com.gitplex.jsymbol.util.HighlightableLabel;
 import com.gitplex.jsymbol.util.NoAntiCacheImage;
 
+/**
+ * This symbol represents a ES6 class definition
+ * 
+ * @author robin
+ *
+ */
 public class ClassSymbol extends JavaScriptSymbol {
 
 	private static final long serialVersionUID = 1L;

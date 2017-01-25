@@ -19,8 +19,19 @@ public abstract class JavaScriptSymbol extends Symbol {
 	
 	private ModuleAccess moduleAccess = ModuleAccess.NORMAL;
 	
-	private boolean declared;
-	
+	/**
+	 * Whether or not the symbol is a property of its parent symbol. Property symbol can be referenced with property 
+	 * path from parent symbol. Considering below code:
+	 * <pre><code>
+	 * function test() {
+	 *   function inner() {
+	 *   }
+	 * }
+	 * test.usage = "some usage guide";
+	 * </code></pre>
+	 * 
+	 * The symbol <tt>usage</tt> is a property symbol, while <tt>inner</tt> is not
+	 */
 	private boolean property;
 	
 	@Override
@@ -66,14 +77,6 @@ public abstract class JavaScriptSymbol extends Symbol {
 
 	public void setSearchable(boolean searchable) {
 		this.searchable = searchable;
-	}
-
-	public boolean isDeclared() {
-		return declared;
-	}
-
-	public void setDeclared(boolean declared) {
-		this.declared = declared;
 	}
 
 	public boolean isProperty() {

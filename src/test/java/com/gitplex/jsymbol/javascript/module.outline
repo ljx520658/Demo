@@ -3,12 +3,12 @@ local people
 local person
 export person
 export function test() {
-  local this {
+  this {
     name
   }
 }
 export function test() {
-  local this {
+  this {
     name
   }
 }
