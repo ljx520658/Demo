@@ -34,6 +34,7 @@
 				</executions>
 				<configuration>
 					<sourceDirectory>${basedir}/src/main/java</sourceDirectory>
+					<listener>false</listener>
 				</configuration>
 			</plugin>
 		</plugins>
@@ -97,7 +98,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.antlr</groupId>
-			<artifactId>antlr4-runtime</artifactId>
+			<artifactId>antlr4</artifactId>
 			<version>${antlr.version}</version>
 		</dependency>
 		<dependency>

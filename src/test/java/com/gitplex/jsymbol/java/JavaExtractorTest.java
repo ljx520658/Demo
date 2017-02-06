@@ -5,7 +5,7 @@ import java.util.List;
 import org.junit.Test;
 
 import com.github.javaparser.ast.Modifier;
-import com.gitplex.jsymbol.DescribableExtractorTest;
+import com.gitplex.jsymbol.DescriptableExtractorTest;
 import com.gitplex.jsymbol.java.symbols.CompilationUnitSymbol;
 import com.gitplex.jsymbol.java.symbols.FieldSymbol;
 import com.gitplex.jsymbol.java.symbols.JavaSymbol;
@@ -13,7 +13,7 @@ import com.gitplex.jsymbol.java.symbols.MethodSymbol;
 import com.gitplex.jsymbol.java.symbols.TypeSymbol;
 import com.gitplex.jsymbol.java.symbols.TypeSymbol.Kind;
 
-public class JavaExtractorTest extends DescribableExtractorTest<JavaSymbol> {
+public class JavaExtractorTest extends DescriptableExtractorTest<JavaSymbol> {
 
 	@Test
 	public void test() {

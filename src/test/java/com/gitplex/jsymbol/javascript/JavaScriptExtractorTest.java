@@ -4,7 +4,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import com.gitplex.jsymbol.DescribableExtractorTest;
+import com.gitplex.jsymbol.DescriptableExtractorTest;
 import com.gitplex.jsymbol.SymbolExtractor;
 import com.gitplex.jsymbol.javascript.symbols.ClassSymbol;
 import com.gitplex.jsymbol.javascript.symbols.FunctionSymbol;
@@ -14,7 +14,7 @@ import com.gitplex.jsymbol.javascript.symbols.MethodSymbol;
 import com.gitplex.jsymbol.javascript.symbols.ModuleAccess;
 import com.gitplex.jsymbol.javascript.symbols.ObjectSymbol;
 
-public class JavaScriptExtractorTest extends DescribableExtractorTest<JavaScriptSymbol> {
+public class JavaScriptExtractorTest extends DescriptableExtractorTest<JavaScriptSymbol> {
 
 	@Test
 	public void test() {

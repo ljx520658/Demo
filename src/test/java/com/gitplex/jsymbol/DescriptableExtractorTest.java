@@ -11,7 +11,7 @@ import org.junit.Assert;
 import com.google.common.base.Splitter;
 import com.google.common.io.Resources;
 
-public abstract class DescribableExtractorTest<T extends Symbol> {
+public abstract class DescriptableExtractorTest<T extends Symbol> {
 
 	/**
 	 * Describe specified symbol in specified context
