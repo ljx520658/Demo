@@ -188,8 +188,20 @@ constantExpression
     :   conditionalExpression
     ;
 
+/*
+ * The original form is
+ *  
+ * declaration
+ *   	:   declarationSpecifiers initDeclaratorList? ';'
+ *   	|   staticAssertDeclaration
+ *   	;
+ * 
+ * We changed to handle below correctly:
+ * int value;
+ */ 
 declaration
-    :   declarationSpecifiers initDeclaratorList? ';'
+    :   declarationSpecifiers initDeclaratorList ';'
+    |	declarationSpecifiers ';'
     |   staticAssertDeclaration
     ;
 
@@ -250,7 +262,7 @@ typeSpecifier
     ;
 
 structOrUnionSpecifier
-    :   structOrUnion Identifier? '{' structDeclarationList '}'
+    :   structOrUnion Identifier? '{' structDeclarationList? '}'
     |   structOrUnion Identifier
     ;
 
@@ -265,7 +277,8 @@ structDeclarationList
     ;
 
 structDeclaration
-    :   specifierQualifierList structDeclaratorList? ';'
+    :   specifierQualifierList structDeclaratorList ';'
+    |   specifierQualifierList ';'
     |   staticAssertDeclaration
     ;
 
@@ -285,7 +298,7 @@ structDeclarator
     ;
 
 enumSpecifier
-    :   'enum' Identifier? '{' enumeratorList '}'
+    :   'enum' Identifier? '{' enumeratorList? '}'
     |   'enum' Identifier? '{' enumeratorList ',' '}'
     |   'enum' Identifier
     ;
@@ -335,12 +348,16 @@ declarator
 directDeclarator
     :   Identifier
     |   '(' declarator ')'
-    |   directDeclarator '[' typeQualifierList? assignmentExpression? ']'
-    |   directDeclarator '[' 'static' typeQualifierList? assignmentExpression ']'
-    |   directDeclarator '[' typeQualifierList 'static' assignmentExpression ']'
-    |   directDeclarator '[' typeQualifierList? '*' ']'
+    |   directDeclarator arrayDeclarator
     |   directDeclarator '(' parameterTypeList ')'
     |   directDeclarator '(' identifierList? ')'
+    ;
+    
+arrayDeclarator
+	:	'[' typeQualifierList? assignmentExpression? ']'
+    |   '[' 'static' typeQualifierList? assignmentExpression ']'
+    |   '[' typeQualifierList 'static' assignmentExpression ']'
+    |   '[' typeQualifierList? '*' ']'
     ;
 
 gccDeclaratorExtension
@@ -383,7 +400,7 @@ typeQualifierList
 
 parameterTypeList
     :   parameterList
-    |   parameterList ',' '...'
+    |   parameterList ',' varArgs='...'
     ;
 
 parameterList
@@ -412,16 +429,17 @@ abstractDeclarator
 
 directAbstractDeclarator
     :   '(' abstractDeclarator ')' gccDeclaratorExtension*
-    |   '[' typeQualifierList? assignmentExpression? ']'
+    |   abstractArrayDeclarator
+    |   '(' parameterTypeList? ')' gccDeclaratorExtension*
+    |   directAbstractDeclarator abstractArrayDeclarator
+    |   directAbstractDeclarator '(' parameterTypeList? ')' gccDeclaratorExtension*
+    ;
+    
+abstractArrayDeclarator
+    :   '[' typeQualifierList? assignmentExpression? ']'
     |   '[' 'static' typeQualifierList? assignmentExpression ']'
     |   '[' typeQualifierList 'static' assignmentExpression ']'
     |   '[' '*' ']'
-    |   '(' parameterTypeList? ')' gccDeclaratorExtension*
-    |   directAbstractDeclarator '[' typeQualifierList? assignmentExpression? ']'
-    |   directAbstractDeclarator '[' 'static' typeQualifierList? assignmentExpression ']'
-    |   directAbstractDeclarator '[' typeQualifierList 'static' assignmentExpression ']'
-    |   directAbstractDeclarator '[' '*' ']'
-    |   directAbstractDeclarator '(' parameterTypeList? ')' gccDeclaratorExtension*
     ;
 
 typedefName
@@ -521,11 +539,10 @@ externalDeclaration
     |   ';' // stray ;
     ;
 
+// skip method body to speed up parsing
 functionDefinition
-    :   declarationSpecifiers? declarator declarationList? '{' {getSkippableInput().skipClosed(LeftBrace, RightBrace);}
+    :   declarationSpecifiers? declarator declarationList? '{' {getSkippableInput().skipUntilClosing(LeftBrace, RightBrace);} '}'
     ;
     
-declarationList
-    :   declaration
-    |   declarationList declaration
-    ;
+declarationList:  declaration+;
+

@@ -12,7 +12,7 @@ import org.apache.wicket.request.resource.PackageResourceReference;
 import com.github.javaparser.ast.Modifier;
 import com.gitplex.jsymbol.Range;
 import com.gitplex.jsymbol.TokenPosition;
-import com.gitplex.jsymbol.java.symbols.ui.MethodDefPanel;
+import com.gitplex.jsymbol.java.symbols.ui.MethodSymbolPanel;
 import com.gitplex.jsymbol.java.symbols.ui.icon.IconLocator;
 import com.gitplex.jsymbol.util.NoAntiCacheImage;
 
@@ -83,7 +83,7 @@ public class MethodSymbol extends JavaSymbol {
 
 	@Override
 	public Component render(String componentId, Range highlight) {
-		return new MethodDefPanel(componentId, this, highlight);
+		return new MethodSymbolPanel(componentId, this, highlight);
 	}
 
 	@Override

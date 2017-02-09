@@ -64,10 +64,10 @@ import com.sonar.sslr.api.RecognitionException;
 public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbol> {
 
 	@Override
-	public List<JavaScriptSymbol> extract(String source) throws ExtractException {
+	public List<JavaScriptSymbol> extract(String fileName, String fileContent) throws ExtractException {
 		List<JavaScriptSymbol> symbols = new ArrayList<>();
 		try {
-			Tree tree = new JavaScriptParser(Charsets.UTF_8).parse(source);
+			Tree tree = new JavaScriptParser(Charsets.UTF_8).parse(fileContent);
 			processTree(tree, null, symbols);
 		} catch (RecognitionException e) {
 			throw new ExtractException("Error parsing javascript", e);
@@ -717,7 +717,7 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 
 	@Override
 	public boolean accept(String fileName) {
-		return acceptExtensions(fileName, "js", "jsx") && !fileName.contains("min");
+		return acceptExtensions(fileName, "js", "jsx") && fileName.contains("min");
 	}
 	
 }

@@ -9,13 +9,13 @@ import com.gitplex.jsymbol.java.symbols.TypeSymbol;
 import com.gitplex.jsymbol.util.HighlightableLabel;
 
 @SuppressWarnings("serial")
-public class TypeDefPanel extends Panel {
+public class TypeSymbolPanel extends Panel {
 
 	private final TypeSymbol typeDef;
 	
 	private final Range highlight;
 	
-	public TypeDefPanel(String id, TypeSymbol typeDef, Range highlight) {
+	public TypeSymbolPanel(String id, TypeSymbol typeDef, Range highlight) {
 		super(id);
 		this.typeDef = typeDef;
 		this.highlight = highlight;

@@ -97,7 +97,7 @@ public class HomePage extends WebPage {
 	private void onChange(AjaxRequestTarget target, String sourceCode, String extractorClassName) {
 		if (StringUtils.isNotBlank(sourceCode)) {
 			try {
-				symbols = ((SymbolExtractor)Class.forName(extractorClassName).newInstance()).extract(sourceCode);
+				symbols = ((SymbolExtractor)Class.forName(extractorClassName).newInstance()).extract(null, sourceCode);
 				error = null;
 			} catch (Exception e) {
 				error = Throwables.getStackTraceAsString(e);

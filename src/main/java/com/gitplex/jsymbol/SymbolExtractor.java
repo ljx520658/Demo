@@ -18,7 +18,19 @@ import java.util.List;
  */
 public interface SymbolExtractor<T extends Symbol> {
 	
-	List<T> extract(String source) throws ExtractException;
+	/**
+	 * Extract symbols from specified content
+	 * 
+	 * @param fileName
+	 * 			name of file to extract symbols from 
+	 * @param fileContent
+	 * 			content of file to extract symbols from
+	 * @return
+	 * 			list of extracted symbols
+	 * 
+	 * @throws ExtractException
+	 */
+	List<T> extract(String fileName, String fileContent) throws ExtractException;
 	
 	boolean accept(String fileName);
 	

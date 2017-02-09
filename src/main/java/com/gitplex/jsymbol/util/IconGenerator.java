@@ -22,14 +22,15 @@ public class IconGenerator {
 		             RenderingHints.VALUE_ANTIALIAS_ON);
 		    graphics.setRenderingHints(rh);
 
-			graphics.setColor(Color.decode("0xFF557F"));
+			 graphics.setColor(Color.decode("0x7F2AFF")); //normal
+//			graphics.setColor(Color.decode("0xFF557F")); //local
 			graphics.fillOval(0, 0, 16, 16);
 			int fontSize = new Double(16).intValue();
 			Font font = new Font(Font.MONOSPACED, Font.BOLD, fontSize);
 			graphics.setFont(font);
 			graphics.setColor(Color.WHITE);
-			graphics.drawString("O", 4, 13);
-			ImageIO.write(image, "PNG", new File("w:\\temp\\local_object.png"));
+			graphics.drawString("m", 4, 12);
+			ImageIO.write(image, "PNG", new File("W:\\gitplex\\jsymbol\\src\\main\\java\\com\\gitplex\\jsymbol\\c\\symbols\\ui\\icon\\member.png"));
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		} finally {

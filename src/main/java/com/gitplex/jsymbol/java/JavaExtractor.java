@@ -37,13 +37,13 @@ import com.google.common.base.Joiner;
 public class JavaExtractor extends AbstractSymbolExtractor<JavaSymbol> {
 
 	@Override
-	public List<JavaSymbol> extract(String source) {
+	public List<JavaSymbol> extract(String fileName, String fileContent) {
 		List<JavaSymbol> symbols = new ArrayList<>();
 
 		CompilationUnitSymbol symbol;		
 		CompilationUnit compilationUnit;
 		try {
-			compilationUnit = JavaParser.parse(source);
+			compilationUnit = JavaParser.parse(fileContent);
 		} catch (ParseProblemException e) {
 			throw new ExtractException("Error parsing java", e);
 		}

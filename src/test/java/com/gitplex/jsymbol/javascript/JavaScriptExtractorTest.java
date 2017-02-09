@@ -19,13 +19,13 @@ public class JavaScriptExtractorTest extends DescriptableExtractorTest<JavaScrip
 	@Test
 	public void test() {
 		SymbolExtractor<JavaScriptSymbol> extractor = new JavaScriptExtractor();
-		verify(readFile("object-literal.outline"), extractor.extract(readFile("object-literal.source")));
-		verify(readFile("variables.outline"), extractor.extract(readFile("variables.source")));
-		verify(readFile("module.outline"), extractor.extract(readFile("module.source")));
-		verify(readFile("class.outline"), extractor.extract(readFile("class.source")));
-		verify(readFile("jquery.outline"), extractor.extract(readFile("jquery.source")));
-		verify(readFile("commonjs.outline"), extractor.extract(readFile("commonjs.source")));
-		verify(readFile("vue.outline"), extractor.extract(readFile("vue.source")));
+		verify(readFile("object-literal.outline"), extractor.extract(null, readFile("object-literal.source")));
+		verify(readFile("variables.outline"), extractor.extract(null, readFile("variables.source")));
+		verify(readFile("module.outline"), extractor.extract(null, readFile("module.source")));
+		verify(readFile("class.outline"), extractor.extract(null, readFile("class.source")));
+		verify(readFile("jquery.outline"), extractor.extract(null, readFile("jquery.source")));
+		verify(readFile("commonjs.outline"), extractor.extract(null, readFile("commonjs.source")));
+		verify(readFile("vue.outline"), extractor.extract(null, readFile("vue.source")));
 	}
 
 	@Override

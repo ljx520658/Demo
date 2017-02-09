@@ -11,15 +11,15 @@ import com.gitplex.jsymbol.java.symbols.MethodSymbol;
 import com.gitplex.jsymbol.util.HighlightableLabel;
 
 @SuppressWarnings("serial")
-public class MethodDefPanel extends Panel {
+public class MethodSymbolPanel extends Panel {
 
-	private final MethodSymbol methodDef;
+	private final MethodSymbol methodSymbol;
 	
 	private final Range highlight;
 	
-	public MethodDefPanel(String id, MethodSymbol methodDef, Range highlight) {
+	public MethodSymbolPanel(String id, MethodSymbol methodSymbol, Range highlight) {
 		super(id);
-		this.methodDef = methodDef;
+		this.methodSymbol = methodSymbol;
 		this.highlight = highlight;
 	}
 
@@ -27,19 +27,19 @@ public class MethodDefPanel extends Panel {
 	protected void onInitialize() {
 		super.onInitialize();
 		
-		add(new HighlightableLabel("name", methodDef.getName(), highlight));
+		add(new HighlightableLabel("name", methodSymbol.getName(), highlight));
 		
-		if (methodDef.getMethodParams() != null)
-			add(new Label("methodParams", methodDef.getMethodParams()));
+		if (methodSymbol.getMethodParams() != null)
+			add(new Label("methodParams", methodSymbol.getMethodParams()));
 		else
 			add(new WebMarkupContainer("methodParams").setVisible(false));
 		
-		if (methodDef.getTypeParams() != null) 
-			add(new Label("typeParams", methodDef.getTypeParams()));
+		if (methodSymbol.getTypeParams() != null) 
+			add(new Label("typeParams", methodSymbol.getTypeParams()));
 		else
 			add(new WebMarkupContainer("typeParams").setVisible(false));
 		
-		add(new Label("type", methodDef.getType()).setVisible(methodDef.getType()!=null));
+		add(new Label("type", methodSymbol.getType()).setVisible(methodSymbol.getType()!=null));
 	}
 
 	@Override

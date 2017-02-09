@@ -33,10 +33,10 @@ public class SymbolExtractorRegistry {
 	}
 	
 	/**
-	 * Get symbol extractor of specified file
+	 * Get symbol extractor of specified file name 
 	 * 
 	 * @return
-	 * 			symbol extractor of specified file, or <tt>null</tt> if not found
+	 * 			symbol extractor of specified file name, or <tt>null</tt> if not found
 	 */
 	@Nullable
 	public static SymbolExtractor<Symbol> getExtractor(String fileName) {

@@ -17,10 +17,10 @@ public class JavaExtractorTest extends DescriptableExtractorTest<JavaSymbol> {
 
 	@Test
 	public void test() {
-		verify(readFile("test.outline"), new JavaExtractor().extract(readFile("test.source")));
-		verify(readFile("composite.outline"), new JavaExtractor().extract(readFile("composite.source")));
-		verify(readFile("lcount.outline"), new JavaExtractor().extract(readFile("lcount.source")));
-		verify(readFile("resource.outline"), new JavaExtractor().extract(readFile("resource.source")));
+		verify(readFile("test.outline"), new JavaExtractor().extract(null, readFile("test.source")));
+		verify(readFile("composite.outline"), new JavaExtractor().extract(null, readFile("composite.source")));
+		verify(readFile("lcount.outline"), new JavaExtractor().extract(null, readFile("lcount.source")));
+		verify(readFile("resource.outline"), new JavaExtractor().extract(null, readFile("resource.source")));
 	}
 
 	@Override

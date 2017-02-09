@@ -1,23 +1,29 @@
-package com.gitplex.jsymbol.java.symbols;
+package com.gitplex.jsymbol.c.symbols;
+
+import javax.annotation.Nullable;
 
 import com.gitplex.jsymbol.Symbol;
 import com.gitplex.jsymbol.TokenPosition;
 
-public abstract class JavaSymbol extends Symbol {
+public abstract class CSymbol extends Symbol {
 
 	private static final long serialVersionUID = 1L;
 	
 	private final String name;
 	
-	private final JavaSymbol parent;
+	private final CSymbol parent;
+	
+	private final boolean local;
 	
 	private final TokenPosition position;
 	
 	private final TokenPosition scope;
 	
-	public JavaSymbol(JavaSymbol parent, String name, TokenPosition position, TokenPosition scope) {
+	public CSymbol(CSymbol parent, String name, boolean local, 
+			@Nullable TokenPosition position, @Nullable TokenPosition scope) {
 		this.parent = parent;
 		this.name = name;
+		this.local = local;
 		this.position = position;
 		this.scope = scope;
 	}
@@ -28,7 +34,7 @@ public abstract class JavaSymbol extends Symbol {
 	}
 
 	@Override
-	public JavaSymbol getParent() {
+	public CSymbol getParent() {
 		return parent;
 	}
 
@@ -43,8 +49,13 @@ public abstract class JavaSymbol extends Symbol {
 	}
 
 	@Override
+	public boolean isLocal() {
+		return local;
+	}
+
+	@Override
 	public String getFQNSeparator() {
 		return ".";
 	}
-
+	
 }

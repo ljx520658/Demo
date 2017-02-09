@@ -167,35 +167,35 @@ public abstract class Symbol implements Serializable {
     	
     	return false;
     }
+    
+    /**
+     * Get separator used to construct FQN of child symbols. For instance, if:
+     * <ul>
+     * <li> FQN of current symbol is &quot;namespace&quot;
+     * <li> FQN separator is &quot;:&quot;
+     * <li> name of child symbol is &quot;person&quot;
+     * 
+     * Then FQN of child symbol will be &quot;namespace:person&quot;
+     * 
+     * @return
+     * 			FQN separator used to construct FQN of child symbols
+     */
+    public abstract String getFQNSeparator();
 
 	/**
-	 * Get namespace of the symbol. Namespace of the symbol serves for multiple purposes:
-	 * <ul>
-	 * <li> When searching for symbols, the namespace will be displayed along with the matching symbol to indicate the 
-	 * symbol context
-	 * <li> When doing symbol cross-reference from another file, GitPlex requires that namespace segments of a possibly 
-	 * matching symbol should also appear in the referring file to make the result more accurate (that is, we match both 
-	 * name and namespace when doing cross-reference)
+	 * Get fully qualified name of the symbol. When searching symbols, parent FQN of matched symbols will also be 
+	 * displayed
 	 * 
 	 * @return
-     *          namespace of the symbol, or <tt>null</tt> if the symbol is in global namespace
+     *          fully qualified name of the symbol
 	 */
-	@Nullable
-	public String getNamespace() {
-		String scope;
+	public String getFQN() {
+		String fqnElement = (getName()!=null?getName():"");
 		if (getParent() != null) {
-			String parentNamespace = getParent().getNamespace();
-			String parentName = getParent().getName();
-			if (parentName == null)
-				parentName = "{}";
-			if (parentNamespace != null)
-				scope = parentNamespace + "." + parentName;
-			else
-				scope = parentName;
+			return getParent().getFQN() + getParent().getFQNSeparator() + fqnElement;
 		} else {
-			scope = null;
+			return fqnElement;
 		}
-		return scope;
 	}
 	
 }

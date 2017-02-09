@@ -107,4 +107,9 @@ public abstract class JavaScriptSymbol extends Symbol {
 		return moduleAccess == ModuleAccess.EXPORT;
 	}
 
+	@Override
+	public String getFQNSeparator() {
+		return ".";
+	}
+
 }
