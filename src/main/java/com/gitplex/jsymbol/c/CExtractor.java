@@ -55,6 +55,13 @@ import com.gitplex.jsymbol.c.symbols.VariableSymbol;
 import com.gitplex.jsymbol.util.SkippableTokenStream;
 import com.gitplex.jsymbol.util.Utils;
 
+/**
+ * We relies on ANTLR to parse C header and source files, and then extract C symbols from the parse tree. Preprocessor 
+ * directives except macro definition will be dropped at lexer stage, and macro definition tokens will be put into a 
+ * separate channel. Since symbol extraction works on a per-file base, so we can not resolve macros. This can make some 
+ * part of source file not conforming to the grammar, so we configure ANTLR error listener to ignore those errors, and 
+ * also our symbol extraction logic catches and ignores exceptions
+ */
 public class CExtractor extends AbstractSymbolExtractor<CSymbol> {
 
 	private static final Logger logger = LoggerFactory.getLogger(CExtractor.class);
@@ -72,7 +79,7 @@ public class CExtractor extends AbstractSymbolExtractor<CSymbol> {
 		} else {
 			fileSymbol = null;
 		}
-		
+
 		ANTLRErrorListener errorListener = new BaseErrorListener() {
 
 			@Override
@@ -132,6 +139,11 @@ public class CExtractor extends AbstractSymbolExtractor<CSymbol> {
 						type = typeBuilder.toString();
 					else
 						type = null;
+					
+					/*
+					 * Static or extern symbols defined in header file is not considered local as they can be 
+					 * referenced by other files via header file including
+					 */
 					boolean local = (fileSymbol instanceof SourceFileSymbol) 
 							&& functionDefinition.declarationSpecifiers() != null 
 							&& (isStatic(functionDefinition.declarationSpecifiers()) 
@@ -151,6 +163,10 @@ public class CExtractor extends AbstractSymbolExtractor<CSymbol> {
 							typeSpecifiers.add(declarationSpecifier.typeSpecifier());
 					}
 					
+					/*
+					 * Static or extern symbols defined in header file is not considered local as they can be 
+					 * referenced by other files via header file including
+					 */
 					boolean isLocal = (fileSymbol instanceof SourceFileSymbol) 
 							&& (isStatic(declarationSpecifiers) || isExtern(declarationSpecifiers));
 					
@@ -165,6 +181,8 @@ public class CExtractor extends AbstractSymbolExtractor<CSymbol> {
 					processDeclarators(typeSpecifiers, declarators, fileSymbol, symbols, isLocal, isTypedef);
 				}
 			} catch (Exception e) {
+				// Exceptions may get thrown even for a valid C file due to our inability to resolve macros, so just 
+				// log the error and continue with next declaration
 				logger.debug("Error extracting symbols", e);
 			}
 		}
@@ -173,7 +191,7 @@ public class CExtractor extends AbstractSymbolExtractor<CSymbol> {
 	}
 	
 	private void processDeclarators(List<TypeSpecifierContext> typeSpecifiers, List<DeclaratorContext> declarators, 
-			CSymbol parent, List<CSymbol> symbols, boolean local, boolean typedef) {
+			CSymbol parent, List<CSymbol> symbols, boolean isLocal, boolean isTypedef) {
 		
 		List<CSymbol> typeSymbols = new ArrayList<>();
 		for (DeclaratorContext declarator: declarators) {
@@ -187,14 +205,14 @@ public class CExtractor extends AbstractSymbolExtractor<CSymbol> {
 				String params = getParameters(declarator.directDeclarator());
 				if (params.length() == 0)
 					params = null;
-				symbol = new FunctionSymbol(parent, identifier.getText(), local, false, params, type, 
+				symbol = new FunctionSymbol(parent, identifier.getText(), isLocal, false, params, type, 
 						Utils.getTokenPosition(identifier.getSymbol()), null);
-			} else if (typedef) {
-				symbol = new TypedefSymbol(parent, identifier.getText(), local, type, 
+			} else if (isTypedef) {
+				symbol = new TypedefSymbol(parent, identifier.getText(), isLocal, type, 
 						Utils.getTokenPosition(identifier.getSymbol()));
 				typeSymbols.add(symbol);
 			} else {
-				symbol = new VariableSymbol(parent, identifier.getText(), local, type, 
+				symbol = new VariableSymbol(parent, identifier.getText(), isLocal, type, 
 						Utils.getTokenPosition(identifier.getSymbol()));
 			}
 			symbols.add(symbol);
@@ -207,11 +225,11 @@ public class CExtractor extends AbstractSymbolExtractor<CSymbol> {
 				CSymbol symbol;
 				if (identifier != null && structOrUnionSpecifier.structDeclarationList() != null) {
 					if (structOrUnionSpecifier.structOrUnion().getText().equals("struct")) {
-						symbol = new StructSymbol(parent, identifier.getText(), local, 
+						symbol = new StructSymbol(parent, identifier.getText(), isLocal, 
 								Utils.getTokenPosition(identifier.getSymbol()), 
 								Utils.getTokenPosition(structOrUnionSpecifier.start, structOrUnionSpecifier.stop));
 					} else {
-						symbol = new UnionSymbol(parent, identifier.getText(), local, 
+						symbol = new UnionSymbol(parent, identifier.getText(), isLocal, 
 								Utils.getTokenPosition(identifier.getSymbol()), 
 								Utils.getTokenPosition(structOrUnionSpecifier.start, structOrUnionSpecifier.stop));
 					}
@@ -222,7 +240,7 @@ public class CExtractor extends AbstractSymbolExtractor<CSymbol> {
 				EnumSpecifierContext enumSpecifier = typeSpecifier.enumSpecifier();
 				TerminalNode identifier = enumSpecifier.Identifier();
 				if (identifier != null && enumSpecifier.enumeratorList() != null) {
-					CSymbol symbol = new EnumSymbol(parent, identifier.getText(), local, 
+					CSymbol symbol = new EnumSymbol(parent, identifier.getText(), isLocal, 
 							Utils.getTokenPosition(identifier.getSymbol()), 
 							Utils.getTokenPosition(enumSpecifier.start, enumSpecifier.stop));
 					symbols.add(symbol);
@@ -321,11 +339,21 @@ public class CExtractor extends AbstractSymbolExtractor<CSymbol> {
 			if (directDeclarator.Identifier() != null) {
 				return true;
 			} else if (directDeclarator.declarator() != null) {
-				if (onlyContainsIdentifier(directDeclarator.declarator()))
+				if (onlyContainsIdentifier(directDeclarator.declarator())) {
 					return true;
-				else
+				} else {
+					/*
+					 * Check if it is a function returning a function, for instance below is a function declaration:
+					 * void (*signal(int sig, void (*func)(int)))(int);
+					 * 
+					 * Function name: signal
+					 * Return type: void(*)(int)
+					 * Function parameter: (int, void(*)(int))
+					 */
 					return isFunction(directDeclarator.declarator().directDeclarator());
+				}
 			} else {
+				// invalid C statement, so simply return false
 				return false;
 			}
 		}
@@ -359,6 +387,22 @@ public class CExtractor extends AbstractSymbolExtractor<CSymbol> {
 		}
 	}
 	
+	/**
+	 * Type decorator is information appended to a type of a variable. For instance, considering below variable 
+	 * declaration:
+	 * 
+	 * <pre><code>
+	 * char *value;
+	 * </code></pre>
+	 * 
+	 * Variable &quot;value&quot; will have type &quot;char*&quot;, where &quot;char&quot; is parsed from typeSpecifier, 
+	 * and &quot;*&quot; is parsed from type decorator 
+	 * 
+	 * @param declarator
+	 * 			the grammar declarator construct to parse type decorator from
+	 * @return
+	 * 			type decorator
+	 */
 	private String getTypeDecorator(DeclaratorContext declarator) {
 		StringBuilder builder = new StringBuilder();
 		if (declarator.pointer() != null)
@@ -398,12 +442,22 @@ public class CExtractor extends AbstractSymbolExtractor<CSymbol> {
 				if (onlyContainsIdentifier(directDeclarator.declarator())) {
 					return "";
 				} else {
+					/*
+					 * It is either a function returning a function, or a function pointer/array returning a function. 
+					 * In either case, we append the type parameters to form type decorator. For instance for below 
+					 * statement:
+					 * 
+					 * void (*signal(int sig, void (*func)(int)))(int);
+					 * 
+					 * It defines the signal function returning type "void(*)(int)"
+					 */
 					builder.append("(")
 							.append(getTypeDecorator(directDeclarator.declarator()))
 							.append(")")
 							.append(typeParams);
 				}
-			} else {
+			} else { 
+				// invalid C statement, so simply return an empty string
 				return "";
 			}
 		} 

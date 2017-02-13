@@ -10,6 +10,12 @@ import com.gitplex.jsymbol.Range;
 import com.gitplex.jsymbol.c.symbols.ui.icon.IconLocator;
 import com.gitplex.jsymbol.util.NoAntiCacheImage;
 
+/**
+ * This symbol represents C source file in order to show in which source file a symbol is defined
+ * 
+ * @author robin
+ *
+ */
 public class SourceFileSymbol extends CSymbol {
 
 	private static final long serialVersionUID = 1L;
@@ -28,6 +34,11 @@ public class SourceFileSymbol extends CSymbol {
 		return false;
 	}
 
+	@Override
+	public boolean isPassthroughInOutline() {
+		return true;
+	}
+	
 	@Override
 	public Image renderIcon(String componentId) {
 		Image icon = new NoAntiCacheImage(componentId, 

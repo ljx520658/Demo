@@ -418,6 +418,9 @@ PreprocessDirectiveBegin
 		-> pushMode(PREPROCESS_DIRECTIVE), skip
 	;        
 
+/*
+ * Use lexer mode instead of semantic predicate for better performance
+ */
 mode PREPROCESS_DIRECTIVE;
 
 PreprocessDirectiveBlockComment

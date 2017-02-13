@@ -410,7 +410,7 @@ parameterList
 
 parameterDeclaration
     :   declarationSpecifiers declarator
-    |   declarationSpecifiers2 abstractDeclarator?
+    |   declarationSpecifiers2 abstractDeclarator? // function parameter without name, for instance test(char*, int);
     ;
 
 identifierList

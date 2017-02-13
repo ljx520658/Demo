@@ -10,6 +10,12 @@ import com.gitplex.jsymbol.Range;
 import com.gitplex.jsymbol.c.symbols.ui.icon.IconLocator;
 import com.gitplex.jsymbol.util.NoAntiCacheImage;
 
+/**
+ * This symbol represents C header file in order to show in which header file a symbol is defined
+ * 
+ * @author robin
+ *
+ */
 public class HeaderFileSymbol extends CSymbol {
 
 	private static final long serialVersionUID = 1L;
@@ -26,6 +32,11 @@ public class HeaderFileSymbol extends CSymbol {
 	@Override
 	public boolean isSearchable() {
 		return false;
+	}
+
+	@Override
+	public boolean isPassthroughInOutline() {
+		return true;
 	}
 
 	@Override
