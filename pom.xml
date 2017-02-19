@@ -10,23 +10,41 @@
 	<version>1.0.0-SNAPSHOT</version>
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>org.antlr</groupId>
-				<artifactId>antlr4-maven-plugin</artifactId>
-				<version>${antlr.version}</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>antlr4</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<sourceDirectory>${basedir}/src/main/java</sourceDirectory>
-					<listener>false</listener>
-				</configuration>
-			</plugin>
+	        <plugin> 
+	            <groupId>org.antlr</groupId>  
+	            <artifactId>antlr4-maven-plugin</artifactId>  
+	            <version>${antlr.version}</version>  
+	            <executions> 
+	                <execution> 
+	                    <goals> 
+	                        <goal>antlr4</goal> 
+	                    </goals> 
+	                </execution> 
+	            </executions>  
+	            <configuration> 
+	                <sourceDirectory>${basedir}/src/main/java</sourceDirectory> 
+	                <listener>false</listener>
+					<visitor>false</visitor> 
+	            </configuration> 
+	        </plugin>  
 		</plugins>
+		<resources>
+			<resource>
+				<directory>src/main/java</directory>
+				<excludes>
+					<exclude>**/*.java</exclude>
+				</excludes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+			</resource>
+			<resource>
+				<directory>target/generated-sources/antlr4</directory>
+				<includes>
+					<include>*.tokens</include>
+				</includes>
+			</resource>
+		</resources>
 	</build>
 	<dependencies>
 		<dependency>
