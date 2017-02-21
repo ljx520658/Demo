@@ -5,8 +5,13 @@ import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class WebServer {
+	
+	private static final Logger logger = LoggerFactory.getLogger(WebServer.class);
+	
 	public static void main(String[] args) {
 		System.setProperty("wicket.configuration", "development");
 		System.setProperty("org.eclipse.jetty.server.Request.maxFormContentSize", "5000000");		
@@ -31,10 +36,13 @@ public class WebServer {
 
 		try {
 			server.start();
+			
+			logger.info("Running! Point your browsers to http://localhost:8080");
+			
 			server.join();
 		} catch (Exception e) {
-			e.printStackTrace();
-			System.exit(100);
+			logger.error("Error running web server", e);
+			System.exit(1);
 		}
 	}
 }

@@ -194,29 +194,6 @@ public class CExtractor extends AbstractSymbolExtractor<CSymbol> {
 			CSymbol parent, List<CSymbol> symbols, boolean isLocal, boolean isTypedef) {
 		
 		List<CSymbol> typeSymbols = new ArrayList<>();
-		for (DeclaratorContext declarator: declarators) {
-			TerminalNode identifier = getIdentifier(declarator);
-			StringBuilder typeBuilder = new StringBuilder();
-			boolean isFunction = isFunction(declarator.directDeclarator());
-			typeBuilder.append(getType(typeSpecifiers)).append(getTypeDecorator(declarator));
-			String type = typeBuilder.length()!=0?typeBuilder.toString():null;
-			CSymbol symbol;
-			if (isFunction) {
-				String params = getParameters(declarator.directDeclarator());
-				if (params.length() == 0)
-					params = null;
-				symbol = new FunctionSymbol(parent, identifier.getText(), isLocal, false, params, type, 
-						Utils.getTokenPosition(identifier.getSymbol()), null);
-			} else if (isTypedef) {
-				symbol = new TypedefSymbol(parent, identifier.getText(), isLocal, type, 
-						Utils.getTokenPosition(identifier.getSymbol()));
-				typeSymbols.add(symbol);
-			} else {
-				symbol = new VariableSymbol(parent, identifier.getText(), isLocal, type, 
-						Utils.getTokenPosition(identifier.getSymbol()));
-			}
-			symbols.add(symbol);
-		}
 		
 		for (TypeSpecifierContext typeSpecifier: typeSpecifiers) {
 			if (typeSpecifier.structOrUnionSpecifier() != null) {
@@ -247,6 +224,30 @@ public class CExtractor extends AbstractSymbolExtractor<CSymbol> {
 					typeSymbols.add(symbol);
 				}
 			}
+		}
+		
+		for (DeclaratorContext declarator: declarators) {
+			TerminalNode identifier = getIdentifier(declarator);
+			StringBuilder typeBuilder = new StringBuilder();
+			boolean isFunction = isFunction(declarator.directDeclarator());
+			typeBuilder.append(getType(typeSpecifiers)).append(getTypeDecorator(declarator));
+			String type = typeBuilder.length()!=0?typeBuilder.toString():null;
+			CSymbol symbol;
+			if (isFunction) {
+				String params = getParameters(declarator.directDeclarator());
+				if (params.length() == 0)
+					params = null;
+				symbol = new FunctionSymbol(parent, identifier.getText(), isLocal, false, params, type, 
+						Utils.getTokenPosition(identifier.getSymbol()), null);
+			} else if (isTypedef) {
+				symbol = new TypedefSymbol(parent, identifier.getText(), isLocal, type, 
+						Utils.getTokenPosition(identifier.getSymbol()));
+				typeSymbols.add(symbol);
+			} else {
+				symbol = new VariableSymbol(parent, identifier.getText(), isLocal, type, 
+						Utils.getTokenPosition(identifier.getSymbol()));
+			}
+			symbols.add(symbol);
 		}
 		
 		for (CSymbol symbol: typeSymbols) {
