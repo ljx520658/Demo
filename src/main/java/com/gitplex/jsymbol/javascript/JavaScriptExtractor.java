@@ -717,7 +717,10 @@ public class JavaScriptExtractor extends AbstractSymbolExtractor<JavaScriptSymbo
 
 	@Override
 	public boolean accept(String fileName) {
-		return acceptExtensions(fileName, "js", "jsx") && fileName.contains("min");
+		return acceptExtensions(fileName, "js", "jsx") 
+				&& !fileName.contains(".min.") 
+				&& !fileName.contains("-min.")
+				&& !fileName.contains("_min.");
 	}
 	
 }
