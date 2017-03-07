@@ -6,6 +6,7 @@ import java.util.List;
 import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.ANTLRInputStream;
 import org.antlr.v4.runtime.BaseErrorListener;
+import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.Token;
@@ -52,7 +53,6 @@ import com.gitplex.jsymbol.c.symbols.StructSymbol;
 import com.gitplex.jsymbol.c.symbols.TypedefSymbol;
 import com.gitplex.jsymbol.c.symbols.UnionSymbol;
 import com.gitplex.jsymbol.c.symbols.VariableSymbol;
-import com.gitplex.jsymbol.util.SkippableTokenStream;
 import com.gitplex.jsymbol.util.Utils;
 
 /**
@@ -104,7 +104,7 @@ public class CExtractor extends AbstractSymbolExtractor<CSymbol> {
 		}
 		lexer.reset();
 
-		SkippableTokenStream stream = new SkippableTokenStream(lexer);
+		CommonTokenStream stream = new CommonTokenStream(lexer);
 		CDeclarationParser parser = new CDeclarationParser(stream);
 		parser.removeErrorListeners();
 		parser.addErrorListener(errorListener);

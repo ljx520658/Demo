@@ -26,36 +26,30 @@
  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-/** C 2011 grammar built from the C11 Spec */
+/*
+ * C11 declaration parser grammar, 
+ * based on https://github.com/antlr/grammars-v4/tree/master/c
+ */
+ 
 parser grammar CDeclarationParser;
 
 options {
 	tokenVocab = CDeclarationLexer;
 } 
 
-@header {
-	import com.gitplex.jsymbol.util.SkippableTokenStream;	
-}
-
-@parser::members {
-	SkippableTokenStream getSkippableInput() {
-		return (SkippableTokenStream)_input;
-	}	
-}
-
 primaryExpression
     :   Identifier
     |   Constant
     |   StringLiteral+
-    |   '(' expression ')'
+    |   '(' ignoreInsideParens ')'
     |   genericSelection
-    |   '__extension__'? '(' compoundStatement ')' // Blocks (GCC extension)
-    |   '__builtin_va_arg' '(' unaryExpression ',' typeName ')'
-    |   '__builtin_offsetof' '(' typeName ',' unaryExpression ')'
+    |   '__extension__'? '(' ignoreInsideParens ')' // Blocks (GCC extension)
+    |   '__builtin_va_arg' '(' ignoreInsideParens ')'
+    |   '__builtin_offsetof' '(' ignoreInsideParens ')'
     ;
 
 genericSelection
-    :   '_Generic' '(' assignmentExpression ',' genericAssocList ')'
+    :   '_Generic' '(' ignoreInsideParens ')'
     ;
 
 genericAssocList
@@ -70,16 +64,16 @@ genericAssociation
 
 postfixExpression
     :   primaryExpression
-    |   postfixExpression '[' expression ']'
-    |   postfixExpression '(' argumentExpressionList? ')'
+    |   postfixExpression '[' ignoreInsideBrackets ']'
+    |   postfixExpression '(' ignoreInsideParens ')'
     |   postfixExpression '.' Identifier
     |   postfixExpression '->' Identifier
     |   postfixExpression '++'
     |   postfixExpression '--'
-    |   '(' typeName ')' '{' initializerList '}'
-    |   '(' typeName ')' '{' initializerList ',' '}'
-    |   '__extension__' '(' typeName ')' '{' initializerList '}'
-    |   '__extension__' '(' typeName ')' '{' initializerList ',' '}'
+    |   '(' ignoreInsideParens ')' '{' ignoreInsideBraces '}'
+    |   '(' ignoreInsideParens ')' '{' ignoreInsideBraces '}'
+    |   '__extension__' '(' ignoreInsideParens ')' '{' ignoreInsideBraces '}'
+    |   '__extension__' '(' ignoreInsideParens ')' '{' ignoreInsideBraces '}'
     ;
 
 argumentExpressionList
@@ -93,8 +87,8 @@ unaryExpression
     |   '--' unaryExpression
     |   unaryOperator castExpression
     |   'sizeof' unaryExpression
-    |   'sizeof' '(' typeName ')'
-    |   '_Alignof' '(' typeName ')'
+    |   'sizeof' '(' ignoreInsideParens ')'
+    |   '_Alignof' '(' ignoreInsideParens ')'
     |   '&&' Identifier // GCC extension address of label
     ;
 
@@ -104,8 +98,8 @@ unaryOperator
 
 castExpression
     :   unaryExpression
-    |   '(' typeName ')' castExpression
-    |   '__extension__' '(' typeName ')' castExpression
+    |   '(' ignoreInsideParens ')' castExpression
+    |   '__extension__' '(' ignoreInsideParens ')' castExpression
     ;
 
 multiplicativeExpression
@@ -258,7 +252,7 @@ typeSpecifier
     |   structOrUnionSpecifier
     |   enumSpecifier
     |   typedefName
-    |   '__typeof__' '(' constantExpression ')' // GCC extension
+    |   '__typeof__' '(' ignoreInsideParens ')' // GCC extension
     ;
 
 structOrUnionSpecifier
@@ -318,7 +312,7 @@ enumerationConstant
     ;
 
 atomicTypeSpecifier
-    :   '_Atomic' '(' typeName ')'
+    :   '_Atomic' '(' ignoreInsideParens ')'
     ;
 
 typeQualifier
@@ -337,14 +331,14 @@ functionSpecifier
     ;
 
 alignmentSpecifier
-    :   '_Alignas' '(' typeName ')'
-    |   '_Alignas' '(' constantExpression ')'
+    :   '_Alignas' '(' ignoreInsideParens ')'
+    |   '_Alignas' '(' ignoreInsideParens ')'
     ;
 
 declarator
     :   pointer? directDeclarator gccDeclaratorExtension*
     ;
-
+	
 directDeclarator
     :   Identifier
     |   '(' declarator ')'
@@ -354,10 +348,7 @@ directDeclarator
     ;
     
 arrayDeclarator
-	:	'[' typeQualifierList? assignmentExpression? ']'
-    |   '[' 'static' typeQualifierList? assignmentExpression ']'
-    |   '[' typeQualifierList 'static' assignmentExpression ']'
-    |   '[' typeQualifierList? '*' ']'
+	:	'[' ignoreInsideBrackets ']'
     ;
 
 gccDeclaratorExtension
@@ -366,7 +357,7 @@ gccDeclaratorExtension
     ;
 
 gccAttributeSpecifier
-    :   '__attribute__' '(' '(' gccAttributeList ')' ')'
+    :   '__attribute__' '(' '(' ignoreInsideParens ')' ')'
     ;
 
 gccAttributeList
@@ -380,14 +371,8 @@ gccAttribute
     |   // empty
     ;
 
-nestedParenthesesBlock
-    :   (   ~('(' | ')')
-        |   '(' nestedParenthesesBlock ')'
-        )*
-    ;
-
 pointer
-    :   '*' typeQualifierList?
+    :   '*' typeQualifierList? 
     |   '*' typeQualifierList? pointer
     |   '^' typeQualifierList? // Blocks language extension
     |   '^' typeQualifierList? pointer // Blocks language extension
@@ -448,8 +433,7 @@ typedefName
 
 initializer
     :   assignmentExpression
-    |   '{' initializerList '}'
-    |   '{' initializerList ',' '}'
+    |   '{' ignoreInsideBraces '}'
     ;
 
 initializerList
@@ -491,8 +475,9 @@ labeledStatement
     |   'default' ':' statement
     ;
 
+// Skip statement body to speed up parsing 
 compoundStatement
-    :   '{' blockItemList? '}'
+    :   '{' ignoreInsideBraces '}'
     ;
 
 blockItemList
@@ -534,15 +519,29 @@ compilationUnit
     ;
 
 externalDeclaration
-    :   functionDefinition
-    |   declaration
-    |   ';' // stray ;
-    ;
-
-// skip method body to speed up parsing
-functionDefinition
-    :   declarationSpecifiers? declarator declarationList? '{' {getSkippableInput().skipUntilClosing(LeftBrace, RightBrace);} '}'
+	: 	functionDefinition
+	|	declaration
+    |   ';'
     ;
     
+
+functionDefinition
+    :   declarationSpecifiers? declarator declarationList? compoundStatement
+    ;
+    
+	
 declarationList:  declaration+;
+
+
+ignoreInsideParens
+	:	(~('('|')') | '(' ignoreInsideParens ')')*
+	;
+
+ignoreInsideBraces
+	:	(~('{'|'}') | '{' ignoreInsideBraces '}')*
+	;
+	  
+ignoreInsideBrackets
+	:	(~('['|']') | '[' ignoreInsideBrackets ']')*
+	;
 

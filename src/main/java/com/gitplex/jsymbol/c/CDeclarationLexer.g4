@@ -26,7 +26,11 @@
  THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-/** C 2011 grammar built from the C11 Spec */
+/*
+ * C11 lexer grammar, 
+ * based on https://github.com/antlr/grammars-v4/tree/master/c
+ */
+ 
 lexer grammar CDeclarationLexer;
 
 @lexer::members {
@@ -428,6 +432,11 @@ PreprocessDirectiveBlockComment
 		-> skip
 	;
 	
+PreprocessDirectiveStringLiteral
+	:	StringLiteral
+		-> skip
+	;
+	
 PreprocessDirectiveLineEscape
 	:	'\\' '\r'? '\n'
 		-> skip
@@ -454,6 +463,11 @@ mode MACRO_DEFINITION_BODY;
 
 MacroDefinitionBlockComment
 	:	PreprocessDirectiveBlockComment
+		-> skip
+	;
+	
+MacroDefinitionStringLiteral
+	:	PreprocessDirectiveStringLiteral
 		-> skip
 	;
 	
