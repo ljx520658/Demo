@@ -47,7 +47,7 @@ The [JavaExtractor](https://www.gitplex.com/gitplex/jsymbol/blob/master/src/main
 ## Set up development environment
 
 1. Make sure you have JDK 8 installed
-1. Install Eclipse Neon for Java, and open an empty workspace, for instance _d:\myworkspace_
+1. Install **Eclipse Neon for Java**, and open an empty workspace, for instance _d:\myworkspace_
 1. Configure JDK 1.8 as default JRE:
 ![jdk](https://www.gitplex.com/gitplex/jsymbol/raw/master/doc/img/eclipse-jdk.png)
 1. Install ANTLR plugin for Eclipse. To do it, open menu item _Help/Eclipse Marketplace_, and search for _antlr_:
