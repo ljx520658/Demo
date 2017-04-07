@@ -41,7 +41,9 @@ The [JavaExtractor](https://www.gitplex.com/gitplex/jsymbol/blob/master/src/main
 **Note that** symbols declared in method body (_date_ here) will not be extracted as they are not part of source static structure. Based on these extracted symbols, GitPlex can then do below things:
 
 1. Displays source outline as:
-> ![simple_example](https://www.gitplex.com/gitplex/jsymbol/raw/master/doc/img/java-symbols.png)
+  
+  > ![simple_example](https://www.gitplex.com/gitplex/jsymbol/raw/master/doc/img/java-symbols.png)
+
 1. Indexes _Logger_, _getName_, _setName_ and _log_ for symbol search and cross reference. Package symbol _com.example.logger_ will not be indexed as we intentionally set the symbol name as _null_. The field symbol _name_ will also not be indexed as it is a local symbol (private field) 
 
 ## Set up development environment
@@ -49,19 +51,31 @@ The [JavaExtractor](https://www.gitplex.com/gitplex/jsymbol/blob/master/src/main
 1. Make sure you have JDK 8 installed
 1. Install **Eclipse Neon for Java**, and open an empty workspace, for instance _d:\myworkspace_
 1. Configure JDK 1.8 as default JRE:
-![jdk](https://www.gitplex.com/gitplex/jsymbol/raw/master/doc/img/eclipse-jdk.png)
+
+  ![jdk](https://www.gitplex.com/gitplex/jsymbol/raw/master/doc/img/eclipse-jdk.png)
+  
 1. Install ANTLR plugin for Eclipse. To do it, open menu item _Help/Eclipse Marketplace_, and search for _antlr_:
-![antlr](https://www.gitplex.com/gitplex/jsymbol/raw/master/doc/img/eclipse-antlr-install.png)
+
+  ![antlr](https://www.gitplex.com/gitplex/jsymbol/raw/master/doc/img/eclipse-antlr-install.png)
+  
 1. Since we only need to use grammar navigation feature of this plugin, we deactivate parser auto-generating as below (GitPlex pom file is already configured to auto-generate parsers):
-![antlr](https://www.gitplex.com/gitplex/jsymbol/raw/master/doc/img/eclipse-antlr-deactivate-tool.png)
+
+  ![antlr](https://www.gitplex.com/gitplex/jsymbol/raw/master/doc/img/eclipse-antlr-deactivate-tool.png)
+  
 1. Fork this repository to your own account, and clone the forked repository to be under the workspace, for instance:
-```
-git clone https://www.gitplex.com/<your account name>/jsymbol d:\myworkspace\jsymbol
-```
+
+  ``` 
+  git clone https://www.gitplex.com/<your account name>/jsymbol d:\myworkspace\jsymbol
+  ```
+  
 1. Import the cloned project as Maven project into Eclipse
-![maven](https://www.gitplex.com/gitplex/jsymbol/raw/master/doc/img/eclipse-import-maven.png)
+
+  ![maven](https://www.gitplex.com/gitplex/jsymbol/raw/master/doc/img/eclipse-import-maven.png)
+  
 1. <a name="updateproject"></a> Eclipse will build the project upon import. Wait for a while for it to download all necessary libraries. If the build eventually fails, try to update the project as below:
-![maven](https://www.gitplex.com/gitplex/jsymbol/raw/master/doc/img/eclipse-update-project.png) 
+
+  ![maven](https://www.gitplex.com/gitplex/jsymbol/raw/master/doc/img/eclipse-update-project.png) 
+  
 1. After finishing your work, push the changes and send a pull request to branch **dev** of this repository
 
 ## Support new languages
@@ -127,7 +141,11 @@ It is suggested to refer to typical IDE of the language being worked to see what
 ### Debug your extractor
 
 You may debug logic of your extractor by creating some unit tests. You may also run the shipped web server to examine extracted symbols from web page:
+
 ![web server](https://www.gitplex.com/gitplex/jsymbol/raw/master/doc/img/debug-webserver.png)
+
 Then you can access url http://localhost:8080 to examine the result:
+
 ![web server](https://www.gitplex.com/gitplex/jsymbol/raw/master/doc/img/debug-webpage.png)
+
 Note that the result will be refreshed automatically as long as the source changes
