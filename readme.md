@@ -148,4 +148,6 @@ Then you can access url http://localhost:8080 to examine the result:
 
 ![web server](doc/img/debug-webpage.png)
 
-Note that the result will be refreshed automatically as long as the source changes
+If your extractor does not appear in this list, please make sure that:
+* The extractor is not abstract
+* The extractor has a default no-arg constructor
