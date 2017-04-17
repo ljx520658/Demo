@@ -5,8 +5,8 @@ import javax.annotation.Nullable;
 import org.apache.wicket.markup.html.basic.Label;
 import org.apache.wicket.model.LoadableDetachableModel;
 
-import com.gitplex.jsyntax.TokenizerUtils;
 import com.gitplex.jsymbol.Range;
+import com.gitplex.jsyntax.TokenUtils;
 
 @SuppressWarnings("serial")
 public class HighlightableLabel extends Label {
@@ -21,13 +21,13 @@ public class HighlightableLabel extends Label {
 						String prefix = label.substring(0, highlight.getFrom());
 						String middle = label.substring(highlight.getFrom(), highlight.getTo());
 						String suffix = label.substring(highlight.getTo());
-						return TokenizerUtils.escapeHtml(prefix) 
+						return TokenUtils.escapeHtml(prefix) 
 								+ "<b>" 
-								+ TokenizerUtils.escapeHtml(middle) 
+								+ TokenUtils.escapeHtml(middle) 
 								+ "</b>" 
-								+ TokenizerUtils.escapeHtml(suffix);
+								+ TokenUtils.escapeHtml(suffix);
 					} else {
-						return TokenizerUtils.escapeHtml(label);
+						return TokenUtils.escapeHtml(label);
 					}
 				} else {
 					return "";
