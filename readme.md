@@ -76,7 +76,7 @@ The [JavaExtractor](src/main/java/com/gitplex/jsymbol/java/JavaExtractor.java) w
 
   ![eclipse-update-project.png](doc/img/eclipse-update-project.png)
   
-1. After finishing your work, push the changes and send a pull request to branch **dev** of this repository
+1. After finishing your work, push the changes and send a pull request to master branch of this repository
 
 ## Support new languages
 
